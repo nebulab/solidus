@@ -7,6 +7,7 @@ module Spree
         @order = order
         @inventory_units = inventory_units || InventoryUnitBuilder.new(order).units
         @preallocated_inventory_units = []
+        @allocated_inventory_units = []
       end
 
       def shipments
@@ -64,6 +65,7 @@ module Spree
           units_for_location = unallocated_inventory_units.select { |unit| variant_ids.include?(unit.variant_id) }
           packer = build_packer(stock_location, units_for_location)
           packages += packer.packages
+          @allocated_inventory_units += packer.packages.flat_map { |package| package.contents.map(&:inventory_unit) }
         end
         packages
       end
@@ -108,7 +110,7 @@ module Spree
       end
 
       def unallocated_inventory_units
-        inventory_units - @preallocated_inventory_units
+        inventory_units - @preallocated_inventory_units - @allocated_inventory_units
       end
 
       def unallocated_variant_ids
