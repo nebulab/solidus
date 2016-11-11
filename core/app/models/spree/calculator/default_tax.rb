@@ -40,10 +40,6 @@ module Spree
       calculable
     end
 
-    def round_to_two_places(amount)
-      BigDecimal.new(amount.to_s).round(2, BigDecimal::ROUND_HALF_UP)
-    end
-
     def deduced_total_by_rate(item, rate)
       unrounded_net_amount = item.discounted_amount / (1 + sum_of_included_tax_rates(item))
       refund_if_necessary(
