@@ -17,7 +17,7 @@ module Spree
         it "updates payment totals" do
           create(:payment_with_refund, order: order, amount: 33.25, refund_amount: 3)
           Spree::OrderUpdater.new(order).update_payment_total
-          expect(order.payment_total).to eq(30.25)
+          expect(order.payment_total).to eq(33.25)
         end
       end
 
