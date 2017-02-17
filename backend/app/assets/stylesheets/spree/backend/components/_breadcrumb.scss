@@ -1,4 +1,17 @@
 .breadcrumb {
   font-size: 16px;
   margin-bottom: 0;
+  @include media($tablet) {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  li {
+    @include media($tablet) {
+      float: none;
+      display: inline;
+    }
+  }
 }
