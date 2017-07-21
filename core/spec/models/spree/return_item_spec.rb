@@ -584,11 +584,13 @@ describe Spree::ReturnItem, type: :model do
   end
 
   describe "#build_exchange_inventory_unit" do
-    let(:return_item) { build(:return_item) }
+    let(:return_item) { build_stubbed(:return_item) }
+    let(:shipment) { build_stubbed(:shipment) }
     subject { return_item.build_exchange_inventory_unit }
 
     context "the return item is intended to be exchanged" do
       before { allow(return_item).to receive(:exchange_variant).and_return(mock_model(Spree::Variant)) }
+      before { allow(return_item).to receive(:exchange_shipment).and_return(shipment) }
 
       context "an exchange inventory unit already exists" do
         before { allow(return_item).to receive(:exchange_inventory_unit).and_return(mock_model(Spree::InventoryUnit)) }
@@ -598,6 +600,7 @@ describe Spree::ReturnItem, type: :model do
       context "no exchange inventory unit exists" do
         it "builds a pending inventory unit with references to the return item, variant, and previous inventory unit" do
           expect(subject.variant).to eq return_item.exchange_variant
+          expect(subject.shipment).to eq return_item.exchange_shipment
           expect(subject.pending).to eq true
           expect(subject).not_to be_persisted
           expect(subject.original_return_item).to eq return_item

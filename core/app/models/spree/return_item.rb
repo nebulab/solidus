@@ -185,7 +185,7 @@ module Spree
         super(
           variant: exchange_variant,
           line_item: inventory_unit.line_item,
-          order: inventory_unit.order,
+          shipment: exchange_shipment,
         )
       end
     end
