@@ -52,7 +52,7 @@ module Spree
       end
 
       begin
-        @line_item = @order.contents.add(variant, quantity)
+        @line_item = @order.contents.add(variant, quantity, order_contents_add_options)
       rescue ActiveRecord::RecordInvalid => e
         @order.errors.add(:base, e.record.errors.full_messages.join(", "))
       end
@@ -103,6 +103,10 @@ module Spree
     end
 
     private
+
+    def order_contents_add_options
+      {}
+    end
 
     def order_params
       if params[:order]
