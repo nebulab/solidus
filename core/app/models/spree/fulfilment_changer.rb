@@ -43,8 +43,15 @@ module Spree
       return false if invalid?
       desired_shipment.save! if desired_shipment.new_record?
 
-      new_on_hand_quantity = [desired_shipment.stock_location.count_on_hand(variant), quantity].min
-      unstock_quantity = desired_shipment.stock_location.backorderable?(variant) ? quantity : new_on_hand_quantity
+      unstock_quantity =
+        if desired_shipment.stock_location.backorderable?(variant)
+          quantity
+        else
+          # Retrieve how many on hand items we can take from desired stock location
+          available_quantity = [desired_shipment.stock_location.count_on_hand(variant), 0].max
+
+          [available_quantity, quantity].min
+        end
 
       ActiveRecord::Base.transaction do
         if handle_stock_counts?
