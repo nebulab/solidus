@@ -442,7 +442,9 @@ describe Spree::CheckoutController, type: :controller do
       it 'does not try to apply coupon code' do
         expect(Spree::PromotionHandler::Coupon).not_to receive :new
 
-        put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+        Spree::Deprecation.silence do
+          put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+        end
 
         expect(response).to redirect_to(spree.checkout_state_path('confirm'))
       end
@@ -456,7 +458,9 @@ describe Spree::CheckoutController, type: :controller do
           .to receive_message_chain(:new, :apply)
           .and_return(promotion_handler)
 
-        put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+          Spree::Deprecation.silence do
+            put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+          end
 
         expect(response).to redirect_to(spree.checkout_state_path('confirm'))
         expect(flash.now[:success]).to eq('Coupon Applied!')
@@ -471,7 +475,9 @@ describe Spree::CheckoutController, type: :controller do
             .and_return(promotion_handler)
           expect(controller).to receive(:setup_for_current_state)
 
-          put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+          Spree::Deprecation.silence do
+            put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+          end
         end
 
         it "render cart with coupon error" do
@@ -479,11 +485,18 @@ describe Spree::CheckoutController, type: :controller do
             .to receive_message_chain(:new, :apply)
             .and_return(promotion_handler)
 
-          put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+          Spree::Deprecation.silence do
+            put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
+          end
 
           expect(response).to render_template :edit
           expect(flash.now[:error]).to eq('Some error')
         end
+      end
+
+      it 'emits a deprecation warning' do
+        expect(Spree::Deprecation).to receive(:warn)
+        put :update, params: { state: order.state, order: { coupon_code: coupon_code } }
       end
     end
   end

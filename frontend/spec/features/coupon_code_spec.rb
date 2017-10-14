@@ -57,23 +57,31 @@ describe "Coupon code promotions", type: :feature, js: true do
 
         it "informs about an invalid coupon code" do
           fill_in "order_coupon_code", with: "coupon_codes_rule_man"
-          click_button "Save and Continue"
+          Spree::Deprecation.silence do
+            click_button "Save and Continue"
+          end
           expect(page).to have_content(Spree.t(:coupon_code_not_found))
         end
 
         it "can enter an invalid coupon code, then a real one" do
           fill_in "order_coupon_code", with: "coupon_codes_rule_man"
-          click_button "Save and Continue"
+          Spree::Deprecation.silence do
+            click_button "Save and Continue"
+          end
           expect(page).to have_content(Spree.t(:coupon_code_not_found))
           fill_in "order_coupon_code", with: "onetwo"
-          click_button "Save and Continue"
+          Spree::Deprecation.silence do
+            click_button "Save and Continue"
+          end
           expect(page).to have_content("Promotion (Onetwo)   -$10.00")
         end
 
         context "with a promotion" do
           it "applies a promotion to an order" do
             fill_in "order_coupon_code", with: "onetwo"
-            click_button "Save and Continue"
+            Spree::Deprecation.silence do
+              click_button "Save and Continue"
+            end
             expect(page).to have_content("Promotion (Onetwo)   -$10.00")
           end
         end
@@ -110,7 +118,9 @@ describe "Coupon code promotions", type: :feature, js: true do
 
           it "shows wallet payments on coupon code errors" do
             fill_in "order_coupon_code", with: "coupon_codes_rule_man"
-            click_button "Save and Continue"
+            Spree::Deprecation.silence do
+              click_button "Save and Continue"
+            end
 
             expect(page).to have_content("The coupon code you entered doesn't exist. Please try again.")
             expect(page).to have_content("Use an existing card")
