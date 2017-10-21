@@ -31,4 +31,5 @@ Spree.onCouponCodeApply = (e) ->
 
 Spree.ready ($) ->
   $('#coupon-code-apply-button').click (e) ->
+    e.preventDefault()
     Spree.onCouponCodeApply(e)

@@ -70,3 +70,7 @@
     </tr>
   </tbody>
 </table>
+
+<% if order.state == 'payment' %>
+  <%= render 'spree/shared/coupon_code', order: order, url: update_checkout_path(order.state) %>
+<% end %>
