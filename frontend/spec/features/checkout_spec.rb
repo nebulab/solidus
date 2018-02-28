@@ -211,6 +211,34 @@ describe "Checkout", type: :feature, inaccessible: true do
     end
   end
 
+  context 'with a payment method that does not support payment profiles' do
+    let(:payment_method) { create(:simple_credit_card_payment_method) }
+
+    before(:each) do
+      order = OrderWalkthrough.up_to(:delivery)
+
+      user = create(:user)
+      order.user = user
+      order.recalculate
+
+      allow_any_instance_of(Spree::CheckoutController).to receive_messages(current_order: order)
+      allow_any_instance_of(Spree::CheckoutController).to receive_messages(try_spree_current_user: user)
+    end
+
+    it "can complete a checkout" do
+      visit spree.checkout_state_path(:delivery)
+      click_button "Save and Continue"
+      choose "Credit Card"
+      fill_in "Card Number", with: '4111111111111111'
+      fill_in "card_expiry", with: '04 / 20'
+      fill_in "Card Code", with: '123'
+      click_button "Save and Continue"
+      click_button "Place Order"
+      expect(page).to_not have_content("Bogus Gateway: Forced failure")
+    end
+  end
+
+
   # Regression test for https://github.com/spree/spree/issues/2694 and https://github.com/spree/spree/issues/4117
   context "doesn't allow bad credit card numbers" do
     let!(:payment_method) { create(:credit_card_payment_method) }
