@@ -35,9 +35,18 @@ RSpec.describe Spree::OrderInventory, type: :model do
     end
 
     context "order is not completed" do
-      before { order.update_columns completed_at: nil }
+      let(:inventory_unit_finalizer) { double(:inventory_unit_finalizer, run!: [true]) }
+
+      before do
+        allow(Spree::Stock::InventoryUnitsFinalizer)
+          .to receive(:new).and_return(inventory_unit_finalizer)
+
+        order.update_columns completed_at: nil
+      end
 
       it "doesn't unstock items" do
+        expect(inventory_unit_finalizer).to_not receive(:run!)
+
         expect {
           subject.verify(shipment)
         }.not_to change { stock_item.reload.count_on_hand }
