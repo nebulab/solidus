@@ -83,6 +83,12 @@ module Spree
     # @param inventory_units [<Spree::InventoryUnit>] the inventory to be
     #   finalized
     def self.finalize_units!(inventory_units)
+      Spree::Deprecation.warn(
+        "inventory_units.finalize_units!(inventory_units) is deprecated. Please
+        use Spree::Stock::InventoryUnitsFinalizer.new(inventory_units).run!",
+        caller
+      )
+
       inventory_units.map do |iu|
         iu.update_columns(
           pending: false,
