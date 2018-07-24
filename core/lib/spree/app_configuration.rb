@@ -381,6 +381,13 @@ module Spree
     # returns a String
     class_name_attribute :taxon_url_parametizer_class, default: 'ActiveSupport::Inflector'
 
+    # Allows providing your own class to allocate the inventory into packages
+    #
+    # @!attribute [rw] taxon_url_parametizer_class
+    # @return [Class] a class that provides a `#allocate_on_hand` and `#allocate_backorderable` method that
+    # returns a Spree::StockQuantities
+    class_name_attribute :stock_allocator_class, default: 'Spree::Stock::Allocator::OnHandFirst'
+
     # Allows providing your own class instance for generating order numbers.
     #
     # @!attribute [rw] order_number_generator
