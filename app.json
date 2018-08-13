@@ -8,7 +8,7 @@
     "demo"
   ],
   "buildpacks": [
-    {"url": "https://github.com/solidusio/heroku-buildpack-solidus-demo.git"}
+    {"url": "https://github.com/nebulab/heroku-buildpack-solidus-demo.git"}
   ],
   "addons": [
     "heroku-postgresql:hobby-dev"
