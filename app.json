@@ -24,6 +24,10 @@
     "ADMIN_PASSWORD": {
       "description": "We will create an admin user with this password.",
       "value": "test123"
+    },
+    "NOKOGIRI_USE_SYSTEM_LIBRARIES": {
+      "description": "Should Nokogiri build with system libraries?",
+      "value": "true"
     }
   }
 }
