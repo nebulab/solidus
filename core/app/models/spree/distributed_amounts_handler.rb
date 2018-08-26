@@ -37,7 +37,7 @@ module Spree
     end
 
     def weights
-      elligible_amounts.map { |amount| amount.to_f / subtotal.to_f }
+      elligible_amounts.map { |amount| amount / subtotal }
     end
 
     def allocated_amounts
