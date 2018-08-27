@@ -74,7 +74,7 @@ RSpec.describe Spree::DistributedAmountsHandler, type: :model do
               handler.amount(order.line_items[2])
             ]
           ).to eq(
-            [7.5, 2.5, 5]
+            [7.51, 2.5, 4.99]
           )
         end
       end
