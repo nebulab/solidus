@@ -187,21 +187,30 @@ RSpec.describe Spree::Shipment, type: :model do
     expect(shipment.total).to eq(8)
   end
 
-  context "manifest" do
+  describe "#manifest_items" do
     let(:order) { create(:order) }
     let(:variant) { create(:variant) }
     let!(:line_item) { order.contents.add variant }
     let!(:shipment) { order.create_proposed_shipments.first }
 
     it "returns variant expected" do
-      expect(shipment.manifest.first.variant).to eq variant
+      expect(shipment.shipping_manifest_items.first.variant).to eq variant
     end
 
     context "variant was removed" do
       before { variant.discard }
 
       it "still returns variant expected" do
-        expect(shipment.manifest.first.variant).to eq variant
+        expect(shipment.shipping_manifest_items.first.variant).to eq variant
+      end
+    end
+  end
+
+  context "manifest" do
+    it "is deprecated" do
+      Spree::Deprecation.silence do
+        expect(Spree::Deprecation).to(receive(:warn))
+        Spree::Shipment.new.manifest
       end
     end
   end
