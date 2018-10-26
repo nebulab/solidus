@@ -45,9 +45,12 @@ class Spree::Carton < Spree::Base
     shipped_at.to_s(:rfc822)
   end
 
-  def manifest
-    @manifest ||= Spree::ShippingManifest.new(inventory_units: inventory_units).items
+  def shipping_manifest_items
+    @shipping_manifest_items ||= shipping_manifest.items
   end
+
+  alias manifest shipping_manifest_items
+  deprecate manifest: :shipping_manifest_items, deprecator: Spree::Deprecation
 
   def manifest_for_order(order)
     Spree::ShippingManifest.new(inventory_units: inventory_units).for_order(order).items
@@ -55,5 +58,11 @@ class Spree::Carton < Spree::Base
 
   def any_exchanges?
     inventory_units.any?(&:original_return_item)
+  end
+
+  private
+
+  def shipping_manifest
+    @shipping_manifest ||= Spree::ShippingManifest.new(inventory_units: inventory_units)
   end
 end

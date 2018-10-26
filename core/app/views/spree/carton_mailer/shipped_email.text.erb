@@ -5,7 +5,7 @@
 ============================================================
 <%= t('spree.shipment_mailer.shipped_email.shipment_summary') %>
 ============================================================
-<% @manifest.each do |item| %>
+<% @shipping_manifest_for_order.each do |item| %>
   <%= item.variant.sku %> <%= item.variant.product.name %> <%= item.variant.options_text %>
 <% end %>
 ============================================================
