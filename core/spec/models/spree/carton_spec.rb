@@ -106,6 +106,15 @@ RSpec.describe Spree::Carton do
   end
 
   describe "#manifest_for_order" do
+    it "is deprecated" do
+      Spree::Deprecation.silence do
+        expect(Spree::Deprecation).to(receive(:warn))
+        Spree::Carton.new.manifest_for_order(create(:order))
+      end
+    end
+  end
+
+  describe "#shipping_manifest_for_order" do
     subject { carton.manifest_for_order(first_order) }
 
     let(:carton) { create(:carton, inventory_units: [first_order.inventory_units, second_order.inventory_units].flatten) }
