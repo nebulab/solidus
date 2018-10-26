@@ -23,7 +23,7 @@ json.cache! [I18n.locale, shipment] do
       json.(shipping_category, :id, :name)
     end
   end
-  json.manifest(shipment.manifest) do |manifest_item|
+  json.manifest(shipment.shipping_manifest_items) do |manifest_item|
     json.variant_id manifest_item.variant.id
     json.quantity(manifest_item.quantity)
     json.states(manifest_item.states)

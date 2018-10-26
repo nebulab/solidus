@@ -18,7 +18,7 @@ module Spree
     def shipped_email(options, _deprecated_options = {})
       @order = options.fetch(:order)
       @carton = options.fetch(:carton)
-      @manifest = @carton.manifest_for_order(@order)
+      @shipping_manifest_for_order = @carton.manifest_for_order(@order)
       options = { resend: false }.merge(options)
       @store = @order.store
       subject = (options[:resend] ? "[#{t('spree.resend').upcase}] " : '')

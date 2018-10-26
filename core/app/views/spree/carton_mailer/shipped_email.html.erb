@@ -11,7 +11,7 @@
         <%= t('spree.shipment_mailer.shipped_email.shipment_summary') %>
       </p>
       <table>
-        <% @manifest.each do |item| %>
+        <% @shipping_manifest_for_order.each do |item| %>
           <tr>
             <td><%= item.variant.sku %></td>
             <td><%= item.variant.product.name %></td>

@@ -1,4 +1,4 @@
-<% shipment.manifest.each do |item| %>
+<% shipment.shipping_manifest_items.each do |item| %>
   <tr class="stock-item" data-item-quantity="<%= item.quantity %>">
     <td class="item-image">
       <%= render 'spree/admin/shared/image',
