@@ -24,7 +24,7 @@
               <th><%= t('spree.price') %></th>
             </thead>
             <tbody>
-              <% ship_form.object.manifest.each do |item| %>
+              <% ship_form.object.shipping_manifest_items.each do |item| %>
                 <tr class="stock-item">
                   <td class="item-image">
                     <%= render 'spree/shared/image',

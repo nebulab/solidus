@@ -337,7 +337,7 @@ describe "Order Details", type: :feature, js: true do
             visit spree.edit_admin_order_path(order)
 
             expect(order.shipments.count).to eq(1)
-            expect(order.shipments.first.manifest.count).to eq(2)
+            expect(order.shipments.first.shipping_manifest_items.count).to eq(2)
 
             within('tr', text: line_item.sku) { click_icon 'arrows-h' }
             complete_split_to(stock_location2)
