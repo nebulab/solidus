@@ -16,7 +16,7 @@ module Spree::Image::ActiveStorageAttachment
           style: style,
           default_style: default_style,
           styles: ATTACHMENT_STYLES
-        )&.service_url(options)
+        )
       else
         # With 0 args will be ok, otherwise will raise an ArgumentError
         super
