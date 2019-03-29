@@ -30,5 +30,13 @@ module Spree
         super
       end
     end
+
+    def attachment?
+      Spree::Deprecation.warn(
+        "Using #{self.class}#attachment? is deprecated, please use "\
+        "`#{self.class}#attachment_present?` instead."
+      )
+      attachment.attached?
+    end
   end
 end
