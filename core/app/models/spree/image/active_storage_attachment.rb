@@ -6,30 +6,12 @@ module Spree::Image::ActiveStorageAttachment
   extend ActiveSupport::Concern
   include Spree::ActiveStorageAttachment
 
-  module DeprecatedPaperclipAPI
-    def attachment(*args)
-      if args.size == 1
-        # TODO: deprecation
-        style = args.first
-        Spree::ActiveStorageAttachment.attachment_variant(
-          super(),
-          style: style,
-          default_style: default_style,
-          styles: ATTACHMENT_STYLES
-        )
-      else
-        # With 0 args will be ok, otherwise will raise an ArgumentError
-        super
-      end
-    end
-  end
-
   included do
     has_one_attached :attachment
     redefine_attachment_writer_with_legacy_io_support :attachment
     validate_attachment_to_be_an_image :attachment
     validates :attachment, presence: true
-    prepend DeprecatedPaperclipAPI
+    prepend Spree::DeprecatedPaperclipAPI
   end
 
   class_methods do
