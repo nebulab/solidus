@@ -2,6 +2,17 @@
 
 module Spree
   module DeprecatedPaperclipAPI
+    def self.prepended(base)
+      unless ActiveStorage::Attached.public_methods.include?(:url)
+        ActiveStorage::Attached.define_method :url do |*args|
+          Spree::Deprecation.warn(
+            "Using #{self.class}#url is deprecated, please use `#{record.class}#url` instead."
+          )
+          record&.url(*args)
+        end
+      end
+    end
+
     def attachment(*args)
       if args.size == 1
         Spree::Deprecation.warn(
