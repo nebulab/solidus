@@ -10,6 +10,7 @@ module Spree::Taxon::ActiveStorageAttachment
     has_one_attached :icon
     redefine_attachment_writer_with_legacy_io_support :icon
     validate_attachment_to_be_an_image :icon
+    prepend Spree::DeprecatedPaperclipAPI
   end
 
   def icon_present?
