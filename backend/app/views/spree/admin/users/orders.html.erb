@@ -101,10 +101,10 @@
   </div>
 <% end %>
 
+<%= paginate @orders, theme: "solidus_admin" %>
+
 <fieldset data-hook="admin_user_order_history" class="no-border-bottom">
   <legend><%= t("spree.admin.user.order_history") %></legend>
-
-  <%= paginate @orders, theme: "solidus_admin" %>
 
   <% if @orders.any? %>
     <table class="index" id="listing_orders" data-hook>
@@ -170,6 +170,6 @@
                    new_resource_url: spree.new_admin_order_path(user_id: @user.id) %>
     </div>
   <% end %>
-
-  <%= paginate @orders, theme: "solidus_admin" %>
 </fieldset>
+
+<%= paginate @orders, theme: "solidus_admin" %>
