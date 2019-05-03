@@ -113,6 +113,10 @@ module Spree
     def available_countries(restrict_to_zone: Spree::Config[:checkout_zone])
       countries = Spree::Country.available(restrict_to_zone: restrict_to_zone)
 
+      Spree::CountryListPresenter.new(countries)
+    end
+
+    def countries_for_collection_select(countries)
       country_names = Carmen::Country.all.map do |country|
         [country.code, country.name]
       end.to_h
