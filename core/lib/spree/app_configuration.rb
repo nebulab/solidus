@@ -434,6 +434,10 @@ module Spree
       @order_number_generator ||= Spree::Order::NumberGenerator.new
     end
 
+    def state_machines
+      @state_machines ||= Spree::Core::StateMachines.new
+    end
+
     def static_model_preferences
       @static_model_preferences ||= Spree::Preferences::StaticModelPreferences.new
     end
