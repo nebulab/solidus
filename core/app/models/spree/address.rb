@@ -86,7 +86,25 @@ module Spree
 
     # @return [String] the full name on this address
     def full_name
+      Spree::Deprecation.warn("Address#full_name is deprecated. Use Address#fullname instead", caller)
+
       "#{firstname} #{lastname}".strip
+    end
+
+    def fullname
+      super.presence || full_name
+    end
+
+    %w[firstname lastname].each do |deprecated_attribute|
+      define_method deprecated_attribute do
+        Spree::Deprecation.warn("Address##{deprecated_attribute} is deprecated. Use Address##{deprecated_attribute} instead", caller)
+        super()
+      end
+
+      define_method "#{deprecated_attribute}=" do |value|
+        Spree::Deprecation.warn("Address##{deprecated_attribute}= is deprecated. Use Address##{deprecated_attribute}= instead", caller)
+        super(value)
+      end
     end
 
     # @return [String] a string representation of this state
@@ -95,7 +113,7 @@ module Spree
     end
 
     def to_s
-      "#{full_name}: #{address1}"
+      "#{fullname}: #{address1}"
     end
 
     # @note This compares the addresses based on only the fields that make up

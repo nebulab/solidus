@@ -5,15 +5,85 @@ require 'rails_helper'
 RSpec.describe Spree::Address, type: :model do
   subject { Spree::Address }
 
-  context "aliased attributes" do
-    let(:address) { Spree::Address.new firstname: 'Ryan', lastname: 'Bigg' }
+  context "naming" do
+    describe "#firstname" do
+      let(:address) { subject.new(firstname: 'Mary') }
 
-    it " first_name" do
-      expect(address.first_name).to eq("Ryan")
+      it 'is deprecated' do
+        expect(Spree::Deprecation).to receive(:warn).twice
+        address.firstname
+      end
+
+      it 'can be also accessed via #first_name' do
+        expect(Spree::Deprecation).to receive(:warn).twice
+        expect(address.first_name).to eq('Mary')
+      end
     end
 
-    it "last_name" do
-      expect(address.last_name).to eq("Bigg")
+    describe "#firstname=" do
+      it 'is deprecated' do
+        expect(Spree::Deprecation).to receive(:warn)
+        Spree::Address.new(firstname: 'Mary')
+      end
+    end
+
+    describe "#lastname" do
+      let(:address) { subject.new(lastname: 'Jane') }
+
+      it 'is deprecated' do
+        expect(Spree::Deprecation).to receive(:warn).twice
+        address.lastname
+      end
+
+      it 'can be also accessed via #last_name' do
+        expect(Spree::Deprecation).to receive(:warn).twice
+        expect(address.last_name).to eq('Jane')
+      end
+    end
+
+    describe "#lastname=" do
+      it 'is deprecated' do
+        expect(Spree::Deprecation).to receive(:warn)
+        Spree::Address.new(lastname: 'Mary')
+      end
+    end
+
+    describe "#fullname" do
+      context 'when empty, firstname is present, lastname is empty' do
+        let(:address) { subject.new(fullname: nil, firstname: 'Mary', lastname: nil) }
+
+        it 'prints a deprecation warning and returns firstname' do
+          expect(Spree::Deprecation)
+            .to receive(:warn)
+            .exactly(5) # 2 times creating address, #full_name, #firstname, #lastname
+            .times
+          expect(address.fullname).to eq 'Mary'
+        end
+      end
+
+      context 'when empty, firstname is present, lastname is present' do
+        let(:address) { subject.new(fullname: nil, firstname: 'Mary', lastname: 'Jane') }
+
+        it 'prints a deprecation warning and returns firstname and lastname' do
+          expect(Spree::Deprecation)
+            .to receive(:warn)
+            .exactly(5) # 2 times creating address, #full_name, #firstname, #lastname
+            .times
+          expect(address.fullname).to eq 'Mary Jane'
+        end
+      end
+
+      context 'when both fullname and firstname are present' do
+        let(:address) do
+          Spree::Deprecation.silence do
+            subject.new( fullname: 'Mary Jane', firstname: 'Mary')
+          end
+        end
+
+        it 'returns fullname ignoring firstname' do
+          expect(address.fullname).to eq 'Mary Jane'
+        end
+      end
     end
   end
 
@@ -324,28 +394,6 @@ RSpec.describe Spree::Address, type: :model do
       expect {
         address.country_iso = "NOCOUNTRY"
       }.to raise_error(::ActiveRecord::RecordNotFound, "Couldn't find Spree::Country")
-    end
-  end
-
-  context '#full_name' do
-    context 'both first and last names are present' do
-      let(:address) { Spree::Address.new firstname: 'Michael', lastname: 'Jackson' }
-      specify { expect(address.full_name).to eq('Michael Jackson') }
-    end
-
-    context 'first name is blank' do
-      let(:address) { Spree::Address.new firstname: nil, lastname: 'Jackson' }
-      specify { expect(address.full_name).to eq('Jackson') }
-    end
-
-    context 'last name is blank' do
-      let(:address) { Spree::Address.new firstname: 'Michael', lastname: nil }
-      specify { expect(address.full_name).to eq('Michael') }
-    end
-
-    context 'both first and last names are blank' do
-      let(:address) { Spree::Address.new firstname: nil, lastname: nil }
-      specify { expect(address.full_name).to eq('') }
     end
   end
 
