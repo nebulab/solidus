@@ -11,12 +11,13 @@ module Spree
     belongs_to :country, class_name: "Spree::Country"
     belongs_to :state, class_name: "Spree::State"
 
-    validates :firstname, :address1, :city, :country_id, presence: true
+    validates :address1, :city, :country_id, presence: true
     validates :zipcode, presence: true, if: :require_zipcode?
     validates :phone, presence: true, if: :require_phone?
 
     validate :state_validate
     validate :validate_state_matches_country
+    validate :validate_naming
 
     alias_attribute :first_name, :firstname
     alias_attribute :last_name, :lastname
@@ -32,6 +33,10 @@ module Spree
 
     def self.build_default
       new(country: Spree::Country.default)
+    end
+
+    def column_defaults
+      super - %w[firstname lastname]
     end
 
     # @return [Address] an equal address already in the database or a newly created one
@@ -69,8 +74,10 @@ module Spree
       end
 
       # TODO: Deprecate these aliased attributes
-      base['firstname'] = base.delete('first_name') if base.key?('first_name')
-      base['lastname'] = base.delete('last_name') if base.key?('last_name')
+      base_fullname = []
+      base_fullname << base.delete('first_name') if base.key?('first_name')
+      base_fullname << base.delete('last_name') if base.key?('last_name')
+      base['fullname'] = base_fullname.join(' ') if base_fullname.any?
 
       base.except!(*DB_ONLY_ATTRS)
     end
@@ -235,6 +242,13 @@ module Spree
       if state && state.country != country
         errors.add(:state, :does_not_match_country)
       end
+    end
+
+    def validate_naming
+      return if fullname.present?
+      return if firstname.present?
+
+      errors.add(:fullname, :presence)
     end
   end
 end

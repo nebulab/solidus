@@ -208,6 +208,44 @@ RSpec.describe Spree::Address, type: :model do
         expect(address.errors[:zipcode]).to be_blank
       end
     end
+
+    context 'naming' do
+      around do |example|
+        Spree::Deprecation.silence { example.run }
+      end
+
+      context 'when both fullname and firstname are present' do
+        let(:address) { build(:address, country: country, fullname: 'Mary Jane', firstname: 'Mary') }
+
+        it 'is valid' do
+          expect(address).to be_valid
+        end
+      end
+
+      context 'when fullname is present and firstname is empty' do
+        let(:address) { build(:address, country: country, fullname: 'Mary Jane', firstname: nil) }
+
+        it 'is valid' do
+          expect(address).to be_valid
+        end
+      end
+
+      context 'when fullname is empty and firstname is present' do
+        let(:address) { build(:address, country: country, fullname: nil, firstname: 'Mary') }
+
+        it 'is valid' do
+          expect(address).to be_valid
+        end
+      end
+
+      context 'when fullname and firstname are both empty' do
+        let(:address) { build(:address, country: country, fullname: nil, firstname: nil) }
+
+        it 'is invalid' do
+          expect(address).not_to be_valid
+        end
+      end
+    end
   end
 
   context ".build_default" do
@@ -247,7 +285,7 @@ RSpec.describe Spree::Address, type: :model do
 
   context ".immutable_merge" do
     RSpec::Matchers.define :be_address_equivalent_attributes do |expected|
-      fields_of_interest = [:firstname, :lastname, :company, :address1, :address2, :city, :zipcode, :phone, :alternative_phone]
+      fields_of_interest = [:fullname, :company, :address1, :address2, :city, :zipcode, :phone, :alternative_phone]
       match do |actual|
         expected_attrs = expected.symbolize_keys.slice(*fields_of_interest)
         actual_attrs = actual.symbolize_keys.slice(*fields_of_interest)
@@ -269,7 +307,7 @@ RSpec.describe Spree::Address, type: :model do
 
       context 'and there is a matching address in the database' do
         let(:new_address_attributes) { Spree::Address.value_attributes(matching_address.attributes) }
-        let!(:matching_address) { create(:address, firstname: 'Jordan') }
+        let!(:matching_address) { create(:address, fullname: 'Jordan') }
 
         it "returns the matching address" do
           expect(subject.attributes).to be_address_equivalent_attributes(new_address_attributes)
@@ -298,7 +336,7 @@ RSpec.describe Spree::Address, type: :model do
 
       context 'and changed address matches an existing address' do
         let(:new_address_attributes) { Spree::Address.value_attributes(matching_address.attributes) }
-        let!(:matching_address) { create(:address, firstname: 'Jordan') }
+        let!(:matching_address) { create(:address) }
 
         it 'returns the matching address' do
           expect(subject.attributes).to be_address_equivalent_attributes(new_address_attributes)
@@ -344,27 +382,31 @@ RSpec.describe Spree::Address, type: :model do
     end
 
     context 'with aliased attributes' do
-      let(:base_attributes) { { 'first_name' => 'Jordan' } }
-      let(:merge_attributes) { { 'last_name' => 'Brough' } }
+      around do |example|
+        Spree::Deprecation.silence { example.run }
+      end
+
+      let(:base_attributes) { { 'first_name' => 'Mary' } }
+      let(:merge_attributes) { { 'last_name' => 'Jane' } }
 
       it 'renames them to the normalized value' do
-        expect(subject).to eq('firstname' => 'Jordan', 'lastname' => 'Brough')
+        expect(subject).to eq('fullname' => 'Mary Jane')
       end
 
       it 'does not modify the original hashes' do
         subject
-        expect(base_attributes).to eq('first_name' => 'Jordan')
-        expect(merge_attributes).to eq('last_name' => 'Brough')
+        expect(base_attributes).to eq('first_name' => 'Mary')
+        expect(merge_attributes).to eq('last_name' => 'Jane')
       end
     end
   end
 
   describe '.taxation_attributes' do
     context 'both taxation and non-taxation attributes are present ' do
-      let(:address) { Spree::Address.new firstname: 'Michael', lastname: 'Jackson', state_id: 1, country_id: 2, zipcode: '12345' }
+      let(:address) { Spree::Address.new(fullname: 'Mary Jane', state_id: 1, country_id: 2, zipcode: '12345') }
 
       it 'removes the non-taxation attributes' do
-        expect(address.taxation_attributes).not_to eq('firstname' => 'Michael', 'lastname' => 'Jackson')
+        expect(address.taxation_attributes).not_to include('fullname' => 'Mary Jane')
       end
 
       it 'returns only the taxation attributes' do
@@ -373,7 +415,7 @@ RSpec.describe Spree::Address, type: :model do
     end
 
     context 'taxation attributes are blank' do
-      let(:address) { Spree::Address.new firstname: 'Michael', lastname: 'Jackson' }
+      let(:address) { Spree::Address.new(fullname: 'Mary Jane') }
 
       it 'returns a subset of the attributes with the correct keys and nil values' do
         expect(address.taxation_attributes).to eq('state_id' => nil, 'country_id' => nil, 'zipcode' => nil)
