@@ -41,8 +41,19 @@ commands:
     steps:
       - run: .circleci/bin/halt-for-doc-only-changes.sh && circleci step halt || true # skip Circle for guides
       - checkout
+
+      - restore_cache:
+          keys:
+            - solidus-gems-v2-{{ .Branch }}
+            - solidus-gems-v2
+
       - run: |
           bundle install --path=vendor/bundle
+
+      - save_cache:
+          key: solidus-gems-v2-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
 
   test:
     steps:
