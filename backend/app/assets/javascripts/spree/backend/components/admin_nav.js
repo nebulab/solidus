@@ -9,8 +9,11 @@ Spree.ready(function() {
   var adminNavToggle = document.querySelector("#admin-nav-toggle");
 
   if (adminNavToggle) {
-    adminNavToggle.addEventListener("click", function() {
+    adminNavToggle.addEventListener("click", function(e) {
+      e.preventDefault();
       document.body.classList.toggle("admin-nav-hidden");
+      adminNavToggle.classList.toggle("fa-chevron-circle-left");
+      adminNavToggle.classList.toggle("fa-chevron-circle-right");
       toggleTooltips();
       document.cookie = "admin_nav_hidden=" + document.body.classList.contains("admin-nav-hidden") + "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
     });

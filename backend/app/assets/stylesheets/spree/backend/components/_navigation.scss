@@ -3,54 +3,87 @@ $padding-y-navbar: 13px;
 $padding-y-navbar-submenu: 9px;
 
 #admin-nav-toggle {
-  position: absolute;
-  top: 0;
-  left: 1;
-  padding: 1.75em 1em;
-  cursor: pointer;
+  border-bottom: $border-sidebar;
+  padding: ($padding-y-navbar/ 2) $padding-x-navbar;
+  width: 100%;
+  text-align: left;
+  color: $color-navbar;
+  font-weight: $font-weight-bold;
+  position: relative;
+  display: block;
+  height: 39px;
+  z-index: 1;
+  
+  span {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+  }
+  
+  &.btn {
+    background-color: transparent;
+  }
+  
+  &.fa {
+    text-indent: 2em;
 
-  i {
-    transform: rotate(0);
-    transition: transform $sidebar-transition;
+    &:before {
+      color: $color-icon-navbar;
+      font-weight: $font-weight-normal;
+      position: absolute;
+      left: 1em;
+      top: 0;
+      line-height: 39px;
+      transform: translateX(-50%);
+      transition: transform .5s ease-in-out;
+    }
+    
+    &:focus {
+      outline: 0;
+      box-shadow: none;
+    }
   }
 }
 
 .admin-nav-hidden {
   padding-left: $width-sidebar-collapsed;
-
+  
   .admin-nav,
   .admin-nav-footer {
     width: $width-sidebar-collapsed;
   }
 
-  .tab-with-icon .text{
-    display:none;
+  .text {
+    transform: translateX(-50px);
+    opacity: 0;
   }
 
-  .admin-login-nav a{
+  .admin-login-nav a {
     text-overflow:clip;
   }
 
   .brand-link {
-    opacity:0;
-    transition: opacity $sidebar-transition;
+    overflow: hidden;
+    
+    img {
+      max-width: 125px;
+    }
   }
 
-  .selected:not(:hover) .admin-subnav {
-    visibility: hidden;
-    opacity: 0;
+  .admin-nav-menu {
+    li {
+      &.selected:not(:hover) > ul  {
+        visibility: hidden;
+        opacity: 0;
+      }
+      
+      &.selected:not(:hover) .admin-subnav {
+        display: none;
+      }
+    }
   }
 
   .admin-nav-menu .selected li {
     padding-left: 0;
-  }
-
-  #admin-nav-toggle {
-    padding-right: 1.5em;
-
-    i {
-      transform: rotate(180deg);
-    }
   }
 }
 
@@ -86,18 +119,24 @@ nav.menu {
   width: $width-sidebar;
   border-right: $border-sidebar;
   background: $color-sidebar-bg;
-  transition: width $sidebar-transition;
+  transition: $sidebar-transition;
 
   @media print {
     display: none
+  }
+  
+  .text {
+    transition: $sidebar-transition;
   }
 }
 
 .admin-nav-header {
   background-color: $color-white;
   border-bottom: 1px solid $color-border;
+  border-right: 1px solid $color-border;
   text-align: center;
   padding: 0 1.25em;
+  width: $width-sidebar;
   // Using line height for proper vertical centering.
   // As line height does not take the border width into account we need to subtract it.
   line-height: $main-header-height - 1px;
@@ -135,54 +174,8 @@ nav.menu {
     }
 
     &:not(.selected):not(:hover) > ul {
-      display: none;
-    }
-
-    &:not(.selected),
-    .admin-nav-hidden & {
-      position: relative;
-
-      // flyout nav
-      > ul {
-        position: absolute;
-        top: 0;
-        left: 100%;
-        width: $width-sidebar-flyout;
-        margin-left: 0;
-        background: $color-white;
-        box-shadow: 1px 0 4px 0 rgba(0, 0, 0, 0.1);
-        border-radius: 0 4px 4px 4px;
-        border: 1px solid $color-border;
-        @include caret($direction: left, $color-caret: $color-white);
-
-      &:before {
-        z-index: 1;
-        top: 1.5em;
-        pointer-events:none;
-      }
-
-      &:after {
-        content: '';
-        display: block;
-        position: absolute;
-        border-width: 1em 1em;
-        border-style: solid;
-        border-color: transparent;
-        border-right-color: $color-border;
-        left: -2.1em;
-        top: 1.5em;
-        margin-top: -1em;
-        pointer-events:none;
-      }
-
-      > li {
-        background: $color-white;
-
-        a {
-          font-weight: $font-weight-bold;
-        }
-      }
-     }
+      visibility: hidden;
+      opacity: 0;
     }
   }
 
@@ -219,7 +212,7 @@ nav.menu {
     padding-top:    $padding-y-navbar - $padding-y-navbar-submenu;
     padding-bottom: $padding-y-navbar - $padding-y-navbar-submenu;
     opacity: 1;
-    transition: opacity $sidebar-transition;
+    transition: all .35s cubic-bezier(.5,.32,.01,1);
 
     li {
       background: $color-navbar-submenu-bg;
@@ -245,12 +238,59 @@ nav.menu {
   }
 }
 
+.admin-nav-menu li:not(.selected),
+.admin-nav-hidden .admin-nav-menu li.selected:hover {
+  position: relative;
+
+  // flyout nav
+  > ul {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: $width-sidebar-flyout;
+    margin-left: 0;
+    background: $color-white;
+    box-shadow: 1px 0 4px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 0 4px 4px 4px;
+    border: 1px solid $color-border;
+    @include caret($direction: left, $color-caret: $color-white);
+
+  &:before {
+    z-index: 1;
+    top: 1.5em;
+    pointer-events:none;
+  }
+
+  &:after {
+    content: '';
+    display: block;
+    position: absolute;
+    border-width: 1em 1em;
+    border-style: solid;
+    border-color: transparent;
+    border-right-color: $color-border;
+    left: -2.1em;
+    top: 1.5em;
+    margin-top: -1em;
+    pointer-events:none;
+  }
+
+  > li {
+    background: $color-white;
+
+    a {
+      font-weight: $font-weight-bold;
+    }
+  }
+ }
+}
+
 .admin-nav-footer {
   width: $width-sidebar;
   background-color: $color-navbar-footer-bg;
   border-top: $border-sidebar;
   border-right: $border-sidebar;
-  transition: width $sidebar-transition;
+  transition: $sidebar-transition;
 
   a {
     color: $color-navbar-footer;
@@ -263,6 +303,36 @@ nav.menu {
 
 .admin-locale-selection {
   margin: 1em;
+  position: relative;
+  
+  &:before {
+    content: "\f0ac";
+    font-family: "FontAwesome";
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: .5rem 0 .5rem .25rem;
+    opacity: 0;
+    transition: opacity .4s cubic-bezier(.5,.32,.01,1);
+  }
+  
+  .admin-nav-hidden & {
+    .js-locale-selection.custom-select {
+      background-color: transparent;
+      background-position: 1.5rem center;
+      background-size: 8px 9px;
+      border: 0;
+      opacity: .6;
+      
+      &:focus {
+        box-shadow: none;
+      }
+    }
+    
+    &::before {
+      opacity: 1;
+    }
+  }
 }
 
 .admin-nav.fits .admin-nav-footer {
@@ -295,4 +365,8 @@ nav.menu {
 
 .brand-link {
   display: block;
+  
+  img {
+    max-width: 125px;
+  }
 }

@@ -13,36 +13,6 @@ body {
   background-color: $admin-body-bg;
 }
 
-#admin-nav-toggle {
-  position: absolute;
-  top: 15px;
-  padding: 7px 0;
-  padding-right: 8px;
-  z-index: 1;
-  background-color: $color-1;
-  border: 1px solid $color-border;
-  border-left: none;
-  cursor: pointer;
-
-  i {
-    margin-left: 5px;
-  }
-}
-
-#admin-nav-toggle i {
-  transform: rotate(0);
-  transition: transform 350ms linear;
-}
-
-.admin-nav-hidden {
-  padding-left: 0;
-
-  #admin-nav-toggle i {
-    transform: rotate(180deg);
-  }
-  transition: padding $sidebar-transition;
-}
-
 .content-wrapper {
   background-color: $content-wrapper-bg;
   padding-top: 1rem;
