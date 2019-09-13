@@ -19,6 +19,10 @@ Spree.ready(function() {
     });
   }
 
+  if (document.body.classList.contains('admin-nav-hidden')) {
+    $(adminNavToggle).removeClass('fa-chevron-circle-left').addClass('fa-chevron-circle-right');
+  }
+
   function toggleTooltips() {
     $(".tab-with-icon .text:visible").each(function() {
       $(this.closest(".tab-with-icon")).attr("data-original-title", "").tooltip();
