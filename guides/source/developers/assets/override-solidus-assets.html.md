@@ -55,10 +55,10 @@ footer#footer {
 }
 ```
 
-Instead, if you could override the global scss variables of the `solidus_backend`, just redefine any variables that you want to change in the [`variables_override.scss`][variables-override-scss] file. For example:
+If you need to override the global SCSS variables used in `solidus_backend`, you can simply redefine them in the [`variables_override.scss`][variables-override-scss] file. For example:
 
 ```scss
-// Change the color to a default variable, e.g. $color-dark
+// Change the color of a default variable, e.g. $color-dark
 $color-dark:          #000;
 ```
 [variables-override-scss]: https://github.com/solidusio/solidus/blob/master/backend/app/assets/stylesheets/spree/backend/globals/_variables_override.scss
