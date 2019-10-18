@@ -3,69 +3,12 @@
 require 'rails_helper'
 require Spree::Core::Engine.root.join('db/migrate/20190106184413_remove_code_from_spree_promotions.rb')
 
-RSpec.describe RemoveCodeFromSpreePromotions do
-  let(:migrations_paths) { ActiveRecord::Migrator.migrations_paths }
-  let(:migrations) do
-    if Rails.gem_version >= Gem::Version.new('6.0.0')
-      ActiveRecord::MigrationContext.new(
-        migrations_paths,
-        ActiveRecord::SchemaMigration
-      ).migrations
-    elsif Rails.gem_version >= Gem::Version.new('5.2.0')
-      ActiveRecord::MigrationContext.new(migrations_paths).migrations
-    else
-      ActiveRecord::Migrator.migrations(migrations_paths)
-    end
-  end
-  let(:previous_version) { 20180710170104 }
-  let(:current_version) { 20190106184413 }
-
-  subject do
-    if Rails.gem_version >= Gem::Version.new('6.0.0')
-      ActiveRecord::Migrator.new(:up, migrations, ActiveRecord::SchemaMigration, current_version).migrate
-    else
-      ActiveRecord::Migrator.new(:up, migrations, current_version).migrate
-    end
-  end
-
-  # This is needed for MySQL since it is not able to rollback to the previous
-  # state when database schema changes within that transaction.
-  before(:all) { self.use_transactional_tests = false }
-  after(:all)  { self.use_transactional_tests = true }
-
-  around do |example|
-    DatabaseCleaner.clean_with(:truncation)
-    # Silence migrations output in specs report.
-    ActiveRecord::Migration.suppress_messages do
-      # Migrate back to the previous version
-      if Rails.gem_version >= Gem::Version.new('6.0.0')
-        ActiveRecord::Migrator.new(:down, migrations, ActiveRecord::SchemaMigration, previous_version).migrate
-      else
-        ActiveRecord::Migrator.new(:down, migrations, previous_version).migrate
-      end
-      # If other tests using Spree::Promotion ran before this one, Rails has
-      # stored information about table's columns and we need to reset those
-      # since the migration changed the database structure.
-      Spree::Promotion.reset_column_information
-
-      example.run
-
-      # Re-update column information after the migration has been executed
-      # again in the example. This will make the promotion attributes cache
-      # ready for other tests.
-      Spree::Promotion.delete_all
-      Spree::Promotion.reset_column_information
-      if Rails.gem_version >= Gem::Version.new('6.0.0')
-        ActiveRecord::Migrator.new(:up, migrations, ActiveRecord::SchemaMigration).migrate
-      else
-        ActiveRecord::Migrator.new(:up, migrations).migrate
-      end
-    end
-    DatabaseCleaner.clean_with(:truncation)
-  end
-
+RSpec.describe RemoveCodeFromSpreePromotions, type: :migration,
+                                              described: 20190106184413,
+                                              previous: 20180710170104,
+                                              reset_tables: [Spree::Promotion] do
+  subject { |example| described_migration(example) }
   let(:promotion_with_code) { create(:promotion) }
-
   before do
     # We can't set code via factory since `code=` is currently raising
     # an error, see more at:
