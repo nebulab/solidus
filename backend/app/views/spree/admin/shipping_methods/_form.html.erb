@@ -81,6 +81,31 @@
       </fieldset>
     </div>
 
+    <div data-hook="admin_stock_locations_form_fields">
+      <fieldset class="no-border-bottom">
+        <legend align="center"><%= plural_resource_name(Spree::StockLocation) %></legend>
+        <%= f.field_container :available_to_all, class: %w(checkbox) do %>
+          <label>
+            <%= f.check_box(:available_to_all) %>
+            <%= Spree::ShippingMethod.human_attribute_name :available_to_all %>
+          </label>
+          <%= error_message_on :shipping_method, :available_to_all %>
+        <% end %>
+
+        <%= f.field_container :stock_locations do %>
+        <% shipping_method_stock_locations = @shipping_method.stock_locations.to_a %>
+          <% Spree::StockLocation.all.each do |stock_location| %>
+            <label>
+              <%= check_box_tag('shipping_method[stock_location_ids][]', stock_location.id, shipping_method_stock_locations.include?(stock_location)) %>
+              <%= stock_location.name %>
+            </label>
+            <br>
+          <% end %>
+          <%= error_message_on :shipping_method, :stock_locations %>
+        <% end %>
+      </fieldset>
+    </div>
+
     <div>
       <fieldset class="no-border-bottom">
         <legend align="center"><%= plural_resource_name(Spree::Zone) %></legend>
