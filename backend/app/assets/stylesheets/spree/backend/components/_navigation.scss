@@ -14,16 +14,16 @@ $padding-y-navbar-submenu: 9px;
   display: block;
   height: 39px;
   z-index: 1;
-  
+
   span {
     font-size: $font-size-sm;
     font-weight: $font-weight-bold;
   }
-  
+
   &.btn {
     background-color: transparent;
   }
-  
+
   &.fa {
     text-indent: 2em;
 
@@ -37,7 +37,7 @@ $padding-y-navbar-submenu: 9px;
       transform: translateX(-50%);
       transition: transform .5s ease-in-out;
     }
-    
+
     &:focus {
       outline: 0;
       box-shadow: none;
@@ -47,7 +47,7 @@ $padding-y-navbar-submenu: 9px;
 
 .admin-nav-hidden {
   padding-left: $width-sidebar-collapsed;
-  
+
   .admin-nav,
   .admin-nav-footer {
     width: $width-sidebar-collapsed;
@@ -55,7 +55,7 @@ $padding-y-navbar-submenu: 9px;
 
   .text {
     transform: translateX(-50px);
-    opacity: 0;
+    display: none;
   }
 
   .admin-login-nav a {
@@ -64,7 +64,7 @@ $padding-y-navbar-submenu: 9px;
 
   .brand-link {
     overflow: hidden;
-    
+
     img {
       max-width: 125px;
     }
@@ -74,9 +74,8 @@ $padding-y-navbar-submenu: 9px;
     li {
       &.selected:not(:hover) > ul  {
         visibility: hidden;
-        opacity: 0;
       }
-      
+
       &.selected:not(:hover) .admin-subnav {
         display: none;
       }
@@ -120,14 +119,9 @@ nav.menu {
   width: $width-sidebar;
   border-right: $border-sidebar;
   background: $color-sidebar-bg;
-  transition: $sidebar-transition;
 
   @media print {
     display: none
-  }
-  
-  .text {
-    transition: $sidebar-transition;
   }
 }
 
@@ -176,7 +170,6 @@ nav.menu {
 
     &:not(.selected):not(:hover) > ul {
       visibility: hidden;
-      opacity: 0;
     }
   }
 
@@ -212,8 +205,6 @@ nav.menu {
     margin: 0;
     padding-top:    $padding-y-navbar - $padding-y-navbar-submenu;
     padding-bottom: $padding-y-navbar - $padding-y-navbar-submenu;
-    opacity: 1;
-    transition: all .35s cubic-bezier(.5,.32,.01,1);
 
     li {
       background: $color-navbar-submenu-bg;
@@ -291,7 +282,6 @@ nav.menu {
   background-color: $color-navbar-footer-bg;
   border-top: $border-sidebar;
   border-right: $border-sidebar;
-  transition: $sidebar-transition;
 
   a {
     color: $color-navbar-footer;
@@ -305,7 +295,7 @@ nav.menu {
 .admin-locale-selection {
   margin: 1em;
   position: relative;
-  
+
   &::after {
     content: "\f0ac";
     font-family: "FontAwesome";
@@ -313,11 +303,9 @@ nav.menu {
     top: 0;
     left: 0;
     padding: .5rem 0 .5rem .25rem;
-    opacity: 0;
-    transition: opacity .4s cubic-bezier(.5,.32,.01,1);
     z-index: -1;
   }
-  
+
   .admin-nav-hidden & {
     .js-locale-selection.custom-select {
       background-color: transparent;
@@ -329,14 +317,10 @@ nav.menu {
       overflow: hidden;
       text-indent: 1rem;
       z-index: 1;
-      
+
       &:focus {
         box-shadow: none;
       }
-    }
-    
-    &::after {
-      opacity: 1;
     }
   }
 }
@@ -371,7 +355,7 @@ nav.menu {
 
 .brand-link {
   display: block;
-  
+
   img {
     max-width: 125px;
   }
