@@ -61,13 +61,6 @@ $color-tab-active:              $color-primary !default;
 $color-tab-active-bg:           $color-white !default;
 $color-tab-active-border:       $color-white !default;
 
-// Sidebar
-//--------------------------------------------------------------
-$width-sidebar:                  200px !default;
-$width-sidebar-flyout:           225px !default;
-$width-sidebar-collapsed:        52px !default;
-$border-sidebar:                 1px solid $color-sidebar-border !default;
-
 // Basic flash colors
 @include bs-deprecated-variable("color-success", "brand-success");
 $color-success:                 $color-green !default;
