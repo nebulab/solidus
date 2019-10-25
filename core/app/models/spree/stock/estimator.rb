@@ -61,9 +61,9 @@ module Spree
           .to_a
           .select do |ship_method|
           calculator = ship_method.calculator
-          calculator.available?(package) &&
-            (calculator.preferences[:currency].blank? ||
-             calculator.preferences[:currency] == package.shipment.order.currency)
+          (calculator.preferences[:currency].blank? ||
+           calculator.preferences[:currency] == package.shipment.order.currency) &&
+            calculator.available?(package)
         end
       end
     end
