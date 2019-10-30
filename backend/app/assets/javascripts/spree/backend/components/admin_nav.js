@@ -11,6 +11,7 @@ Spree.ready(function() {
     adminNavToggle.addEventListener("click", function(e) {
       e.preventDefault();
       document.body.classList.toggle("admin-nav-hidden");
+      $(document.body).trigger("sticky_kit:recalc");
       adminNavToggle.classList.toggle("fa-chevron-circle-left");
       adminNavToggle.classList.toggle("fa-chevron-circle-right");
       document.cookie = "admin_nav_hidden=" + document.body.classList.contains("admin-nav-hidden") + "; expires=Fri, 31 Dec 9999 23:59:59 GMT";
