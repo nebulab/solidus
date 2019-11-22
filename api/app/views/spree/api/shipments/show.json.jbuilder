@@ -23,7 +23,7 @@ json.cache! [I18n.locale, @shipment] do
       json.(shipping_category, :id, :name)
     end
   end
-  json.manifest(@shipment.manifest) do |manifest_item|
+  json.manifest(@shipment.shipping_manifest_items) do |manifest_item|
     json.variant do
       json.partial!("spree/api/variants/small", variant: manifest_item.variant)
     end

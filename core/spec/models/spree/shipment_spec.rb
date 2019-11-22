@@ -141,6 +141,26 @@ RSpec.describe Spree::Shipment, type: :model do
     it 'should equal line items final amount with tax' do
       expect(shipment.item_cost).to eql(11.0)
     end
+
+    context 'with more shipments for the same line_item' do
+      let(:order) do
+        create(
+          :order_with_line_items,
+          line_items_attributes: [{ price: 10, variant: variant, quantity: 2 }],
+          ship_address: ship_address,
+        )
+      end
+      let(:other_shipment) { order.shipments.create(stock_location_id: shipment.stock_location) }
+
+      it 'returns shipment line items amount with tax' do
+        expect(order.shipments.first.item_cost).to eql(22.0)
+        expect {
+          order.inventory_units.last.update(shipment_id: other_shipment.id)
+        }.to change { order.shipments.reload.first.item_cost }.from(22.0).to(11.0)
+
+        expect(order.shipments.second.item_cost).to eql(11.0)
+      end
+    end
   end
 
   it "#discounted_cost" do
@@ -187,21 +207,30 @@ RSpec.describe Spree::Shipment, type: :model do
     expect(shipment.total).to eq(8)
   end
 
-  context "manifest" do
+  describe "#manifest_items" do
     let(:order) { create(:order) }
     let(:variant) { create(:variant) }
     let!(:line_item) { order.contents.add variant }
     let!(:shipment) { order.create_proposed_shipments.first }
 
     it "returns variant expected" do
-      expect(shipment.manifest.first.variant).to eq variant
+      expect(shipment.shipping_manifest_items.first.variant).to eq variant
     end
 
     context "variant was removed" do
       before { variant.discard }
 
       it "still returns variant expected" do
-        expect(shipment.manifest.first.variant).to eq variant
+        expect(shipment.shipping_manifest_items.first.variant).to eq variant
+      end
+    end
+  end
+
+  context "manifest" do
+    it "is deprecated" do
+      Spree::Deprecation.silence do
+        expect(Spree::Deprecation).to(receive(:warn))
+        Spree::Shipment.new.manifest
       end
     end
   end

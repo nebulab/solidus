@@ -109,11 +109,11 @@ module Spree
     deprecate :add_shipping_method, deprecator: Spree::Deprecation
 
     def after_cancel
-      manifest.each { |item| manifest_restock(item) }
+      shipping_manifest_items.each { |item| manifest_restock(item) }
     end
 
     def after_resume
-      manifest.each { |item| manifest_unstock(item) }
+      shipping_manifest_items.each { |item| manifest_unstock(item) }
     end
 
     def backordered?
@@ -184,7 +184,7 @@ module Spree
     end
 
     def item_cost
-      line_items.map(&:total).sum
+      manifest.sum(&:item_cost)
     end
 
     def ready_or_pending?
@@ -228,9 +228,12 @@ module Spree
       shipping_rates.detect(&:selected?)
     end
 
-    def manifest
-      @manifest ||= Spree::ShippingManifest.new(inventory_units: inventory_units).items
+    def shipping_manifest_items
+      @shipping_manifest_items ||= shipping_manifest.items
     end
+
+    alias manifest shipping_manifest_items
+    deprecate manifest: :shipping_manifest_items, deprecator: Spree::Deprecation
 
     def selected_shipping_rate_id
       selected_shipping_rate.try(:id)
@@ -396,6 +399,10 @@ module Spree
     def finalize_pending_inventory_units
       pending_units = inventory_units.select(&:pending?)
       Spree::Stock::InventoryUnitsFinalizer.new(pending_units).run!
+    end
+
+    def shipping_manifest
+      @shipping_manifest ||= Spree::ShippingManifest.new(inventory_units: inventory_units)
     end
 
     def after_ship
