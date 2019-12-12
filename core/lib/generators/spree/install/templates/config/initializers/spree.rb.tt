@@ -22,6 +22,8 @@ Spree.config do |config|
   config.image_attachment_module = 'Spree::Image::PaperclipAttachment'
   config.taxon_attachment_module = 'Spree::Taxon::PaperclipAttachment'
 
+  # Defaults
+  config.raise_with_invalid_currency = false
 
   # Permission Sets:
 
