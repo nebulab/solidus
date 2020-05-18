@@ -2,6 +2,8 @@
 
 ## What is Solidus?
 
+test adding content
+
 Solidus is a free, open-source eCommerce platform based on the Ruby on Rails framework. Built as a Rails engine, Solidus is designed to be incredibly flexible: you start from a strong foundation and a fully functional backend, but you can customize every single aspect of the platform, either through built-in configuration hooks and extensions or the Ruby's and Rails' native override mechanisms.
 
 By providing the building blocks for creating production-grade online stores, Solidus saves you a lot of time and money, while still giving you all the flexibility you're going to need.
