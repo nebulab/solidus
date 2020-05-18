@@ -37,7 +37,7 @@ module AwesomeStore
     end
 
     private
-    
+
     def blacklisted_emails
       ENV.fetch('BLACKLISTED_EMAILS', '').split(',')
     end
