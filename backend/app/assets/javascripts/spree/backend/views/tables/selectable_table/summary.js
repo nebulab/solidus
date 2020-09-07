@@ -14,6 +14,15 @@ Spree.Views.Tables.SelectableTable.Summary = Backbone.View.extend({
     this.listenTo(this.model, 'change', this.render)
 
     this.colspan = options.columns - 1;
+    this.actionableColspan = 0
+
+    this.selectableTable = options.selectableTable;
+    this.actionable = this.selectableTable.$el.hasClass('actionable')
+
+    if(this.actionable) {
+      this.colspan = options.columns - 3
+      this.actionableColspan = 3
+    }
 
     this.render();
   },
@@ -23,12 +32,22 @@ Spree.Views.Tables.SelectableTable.Summary = Backbone.View.extend({
     var all_items_selected = this.model.get('allSelected');
 
     var html = HandlebarsTemplates['tables/selectable_label']({
+      actionable: this.actionable,
+      actionableColspan: this.actionableColspan,
       colspan: this.colspan,
       item_selected_label: this.selectedItemLabel(all_items_selected, selectedItemLength),
       all_items_selected: all_items_selected
     });
 
     this.$el.html(html);
+
+    if(this.actionable) {
+      new Spree.Views.Tables.SelectableTable.Actions({
+        el: this.$el.find('th.actions'),
+        model: this.model,
+        selectableTable: this.selectableTable,
+      });
+    }
   },
 
   selectedItemLabel: function(all_selected, selected_item_length) {
