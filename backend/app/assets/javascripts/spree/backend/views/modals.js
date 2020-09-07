@@ -13,3 +13,13 @@
  * }
  *
  */
+Spree.Views.Modals = {
+  batchPreview: function($el = null) {
+    if($el != null) {
+      this.modalBatchPreview = new Spree.Views.Modals.Batch.Preview({el: $el})
+    }
+
+    return this.modalBatchPreview;
+  },
+
+};

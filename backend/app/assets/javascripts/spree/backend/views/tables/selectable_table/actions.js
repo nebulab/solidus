@@ -1,4 +1,8 @@
 Spree.Views.Tables.SelectableTable.Actions = Backbone.View.extend({
+  events: {
+    'click a.batch-action': 'previewBatchAction'
+  },
+
   initialize: function(options) {
     this.listenTo(this.model, 'change', this.render);
 
@@ -17,4 +21,7 @@ Spree.Views.Tables.SelectableTable.Actions = Backbone.View.extend({
 
     this.$el.html(html);
   },
+
+  previewBatchAction: function(e) {
+  }
 });

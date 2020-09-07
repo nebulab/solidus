@@ -10,3 +10,8 @@
  * });
  *
  */
+Spree.ready(function() {
+  $('#batch-preview').each(function() {
+    Spree.Views.Modals.batchPreview($(this))
+  })
+});

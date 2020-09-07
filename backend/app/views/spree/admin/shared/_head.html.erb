@@ -46,3 +46,12 @@
 <% end %>
 
 <%= yield :head %>
+
+<%=
+render(
+    'spree/admin/batch_actions/preview',
+    target: 'batch-preview',
+    title: 'Preview batch command',
+    content: ''
+  )
+%>
