@@ -1084,6 +1084,10 @@ en:
     balance_due: Balance Due
     base_amount: Base Amount
     base_percent: Base Percent
+    batch_actions:
+      destroy_record_action:
+        confirm: You are going to destroy %{total_count} items. Are you sure?
+        result: "%{total_count} items have been deleted."
     bill_address: Bill Address
     billing: Billing
     billing_address: Billing Address
@@ -1823,6 +1827,7 @@ en:
     price_sack: Price Sack
     process: Process
     product: Product
+    product_batch: Product Batch
     product_details: Product Details
     product_has_no_description: This product has no description
     product_not_available_in_this_currency: This product is not available in the selected
