@@ -108,34 +108,6 @@ RSpec.describe Spree::Event do
     end
   end
 
-  describe '.subscribers' do
-    let(:subscriber) { instance_double(Module, 'Subscriber') }
-    let(:subscriber_name) { instance_double(String, 'Subscriber name') }
-
-    before do
-      described_class.subscribers.clear
-      allow(subscriber).to receive(:name).and_return(subscriber_name)
-      allow(subscriber_name).to receive(:constantize).and_return(subscriber)
-      allow(subscriber_name).to receive(:to_s).and_return(subscriber_name)
-    end
-
-    after { described_class.subscribers.clear }
-
-    it 'accepts the names of constants' do
-      Spree::Config.events.subscribers << subscriber_name
-
-      expect(described_class.subscribers.to_a).to eq([subscriber])
-    end
-
-    it 'discards duplicates' do
-      described_class.subscribers << subscriber_name
-      described_class.subscribers << subscriber_name
-      described_class.subscribers << subscriber_name
-
-      expect(described_class.subscribers.to_a).to eq([subscriber])
-    end
-  end
-
   describe '.require_subscriber_files' do
     let(:susbcribers_dir) { Rails.root.join('app', 'subscribers', 'spree') }
 
@@ -149,7 +121,7 @@ RSpec.describe Spree::Event do
     after { FileUtils.rm_rf(susbcribers_dir) }
 
     context 'when Spree::Config.events.autoload_subscribers is true (default)' do
-      let(:events_config) { double(autoload_subscribers: true, subscribers: Set.new) }
+      let(:events_config) { double(autoload_subscribers: true, subscribers: {}) }
 
       before { create_subscriber_file('FooSubscriber') }
 
@@ -159,12 +131,12 @@ RSpec.describe Spree::Event do
         end.to change { described_class.subscribers.count }.by 1
 
         expect(defined? Spree::FooSubscriber).to be_truthy
-        expect(described_class.subscribers).to include(Spree::FooSubscriber)
+        expect(described_class.subscribers).to include('Spree::FooSubscriber' => {})
       end
     end
 
     context 'when Spree::Config.autoload_subscribers is false' do
-      let(:events_config) { double(autoload_subscribers: false, subscribers: Set.new) }
+      let(:events_config) { double(autoload_subscribers: false, subscribers: {}) }
 
       before do
         stub_spree_preferences(events: events_config)

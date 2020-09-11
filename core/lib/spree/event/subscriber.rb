@@ -27,7 +27,7 @@ module Spree
         base.mattr_accessor :event_actions
         base.event_actions = {}
 
-        Spree::Event.subscribers << base.name
+        Spree::Event.subscribers[base.name] ||= {}
       end
 
       # Declares a method name in the including module that can be subscribed/unsubscribed
@@ -66,9 +66,8 @@ module Spree
       def subscribe!
         unsubscribe!
         event_actions.each do |event_action, event_name|
-          send "#{event_action}_handler=", Spree::Event.subscribe(event_name) { |event|
-            send event_action, event
-          }
+          subscription = Spree::Event.subscribe(event_name) { |event| send event_action, event }
+          Spree::Event.subscribers[name][event_action] = subscription
         end
       end
 
@@ -78,7 +77,10 @@ module Spree
       #    EmailSender.unsubscribe!
       def unsubscribe!
         event_actions.keys.each do |event_action|
-          Spree::Event.unsubscribe send("#{event_action}_handler")
+          if (subscription = Spree::Event.subscribers.dig(name, event_action))
+            Spree::Event.unsubscribe(subscription)
+            Spree::Event.subscribers[name].delete(event_action)
+          end
         end
       end
     end

@@ -28,11 +28,16 @@ RSpec.describe Spree::Order, type: :model do
         end.to change(order, :confirmation_delivered).to true
       end
 
+      it 'does send the email' do
+        expect(Spree::Config.order_mailer_class).to receive(:confirm_email).and_call_original
+        order.finalize!
+      end
+
       # These specs show how notifications can be removed, one at a time or
       # all the ones set by MailerSubscriber module
       context 'when removing the default email notification subscription' do
         before do
-          Spree::Event.unsubscribe Spree::MailerSubscriber.order_finalized_handler
+          Spree::MailerSubscriber.unsubscribe!
         end
 
         after do

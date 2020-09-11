@@ -6,7 +6,7 @@ module Spree
   module Event
     class Configuration
       def subscribers
-        @subscribers ||= ::Spree::Core::ClassConstantizer::Set.new
+        @subscribers ||= {}
       end
 
       attr_writer :adapter, :suffix, :autoload_subscribers
