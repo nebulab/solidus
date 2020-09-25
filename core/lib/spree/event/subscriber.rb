@@ -54,7 +54,14 @@ module Spree
       #     end
       #   end
       def event_action(method_name, event_name: nil)
-        mattr_accessor "#{method_name}_handler"
+        mattr_writer "#{method_name}_handler"
+
+        define_method "#{method_name}_handler" do
+          Spree::Deprecation.warn("#{name}.#{method_name}_handler and #{name}.#{method_name}_handler= from the old events mapping interface are deprecated. Please use the new mapping stored in Spree::Event.subscribers.", caller)
+
+          class_variable_get("@@#{method_name}_handler")
+        end
+
         event_actions[method_name] = (event_name || method_name).to_s
       end
 
@@ -67,6 +74,9 @@ module Spree
         unsubscribe!
         event_actions.each do |event_action, event_name|
           subscription = Spree::Event.subscribe(event_name) { |event| send event_action, event }
+          # deprecated mappings, to be removed when Solidus 2.10 is not supported anymore:
+          send "#{event_action}_handler=", subscription
+
           Spree::Event.subscribers[name][event_action] = subscription
         end
       end
