@@ -19,7 +19,10 @@ RSpec.describe Spree::Event::Subscriber do
   end
 
   describe '::subscribe!' do
-    before { M.unsubscribe! }
+    before do
+      allow(Spree::Deprecation).to receive(:warn)
+      M.unsubscribe!
+    end
 
     it 'adds new listeners to Spree::Event' do
       expect { M.subscribe! }.to change { Spree::Event.listeners }
@@ -46,7 +49,10 @@ RSpec.describe Spree::Event::Subscriber do
   end
 
   describe '::unsubscribe' do
-    before { M.subscribe! }
+    before do
+      allow(Spree::Deprecation).to receive(:warn)
+      M.subscribe!
+    end
 
     it 'removes the subscription' do
       expect(M).not_to receive(:event_name)
@@ -57,7 +63,10 @@ RSpec.describe Spree::Event::Subscriber do
 
   describe '::event_action' do
     context 'when the action has not been declared' do
-      before { M.subscribe! }
+      before do
+        allow(Spree::Deprecation).to receive(:warn)
+        M.subscribe!
+      end
 
       it 'does not subscribe the action' do
         expect(M).not_to receive(:other_event)
@@ -67,11 +76,13 @@ RSpec.describe Spree::Event::Subscriber do
 
     context 'when the action is declared' do
       before do
+        allow(Spree::Deprecation).to receive(:warn)
         M.event_action :other_event
         M.subscribe!
       end
 
       after do
+        allow(Spree::Deprecation).to receive(:warn)
         M.unsubscribe!
         M.event_actions.delete(:other_event)
       end
