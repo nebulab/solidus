@@ -65,21 +65,23 @@ module Spree
         event_actions[method_name] = (event_name || method_name).to_s
       end
 
-      # Subscribes all declared event actions to their events. Only actions that are subscribed
+      # @deprecated Subscribes all declared event actions to their events. Only actions that are subscribed
       # will be called when their event fires.
       #
       # @example subscribe all event actions for module 'EmailSender'
       #    EmailSender.subscribe!
       def subscribe!
         unsubscribe!
+        Spree::Deprecation.warn("#{name}.subscribe! is deprecated. Please move your event subscribers to folder `app/subscribers/*_subscriber.rb` and they will be loaded automatically. ", caller)
         Spree::Event.subscribers.send(:subscribe, self)
       end
 
-      # Unsubscribes all declared event actions from their events. This means that when an event
+      # @deprecated Unsubscribes all declared event actions from their events. This means that when an event
       # fires then none of its unsubscribed event actions will be called.
       # @example unsubscribe all event actions for module 'EmailSender'
       #    EmailSender.unsubscribe!
       def unsubscribe!
+        Spree::Deprecation.warn("#{name}.unsubscribe! is deprecated. Please move your event subscribers to folder `app/subscribers/*_subscriber.rb` and they will be unloaded automatically. ", caller)
         Spree::Event.subscribers.send(:unsubscribe, self)
       end
     end
