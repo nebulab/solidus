@@ -48,15 +48,11 @@ module Spree
       initializer 'spree.core.initialize_subscribers' do |app|
         app.reloader.to_prepare do
           Spree::Event.require_subscriber_files
-          Spree::Event.subscribers.each_key do |klass|
-            klass.constantize.subscribe!
-          end
+          Spree::Event.subscribers.subscribe_all
         end
 
         app.reloader.before_class_unload do
-          Spree::Event.subscribers.each_key do |klass|
-            klass.constantize.unsubscribe!
-          end
+          Spree::Event.subscribers.unsubscribe_all
         end
       end
 

@@ -128,10 +128,10 @@ RSpec.describe Spree::Event do
       it 'requires subscriber files and loads them into Spree::Event.subscribers' do
         expect do
           described_class.require_subscriber_files
-        end.to change { described_class.subscribers.count }.by 1
+        end.to change { described_class.subscribers.mappings.count }.by 1
 
         expect(defined? Spree::FooSubscriber).to be_truthy
-        expect(described_class.subscribers).to include('Spree::FooSubscriber' => {})
+        expect(described_class.subscribers.mappings).to include('Spree::FooSubscriber' => {})
       end
     end
 

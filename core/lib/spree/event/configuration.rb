@@ -6,7 +6,7 @@ module Spree
   module Event
     class Configuration
       def subscribers
-        @subscribers ||= {}
+        @subscribers ||= Spree::Event::Subscribers.new
       end
 
       attr_writer :adapter, :suffix, :autoload_subscribers

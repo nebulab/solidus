@@ -27,7 +27,7 @@ module Spree
         base.mattr_accessor :event_actions
         base.event_actions = {}
 
-        Spree::Event.subscribers[base.name] ||= {}
+        Spree::Event.subscribers.register(base)
       end
 
       # Declares a method name in the including module that can be subscribed/unsubscribed
@@ -72,13 +72,7 @@ module Spree
       #    EmailSender.subscribe!
       def subscribe!
         unsubscribe!
-        event_actions.each do |event_action, event_name|
-          subscription = Spree::Event.subscribe(event_name) { |event| send event_action, event }
-          # deprecated mappings, to be removed when Solidus 2.10 is not supported anymore:
-          send "#{event_action}_handler=", subscription
-
-          Spree::Event.subscribers[name][event_action] = subscription
-        end
+        Spree::Event.subscribers.send(:subscribe, self)
       end
 
       # Unsubscribes all declared event actions from their events. This means that when an event
@@ -86,12 +80,7 @@ module Spree
       # @example unsubscribe all event actions for module 'EmailSender'
       #    EmailSender.unsubscribe!
       def unsubscribe!
-        event_actions.keys.each do |event_action|
-          if (subscription = Spree::Event.subscribers.dig(name, event_action))
-            Spree::Event.unsubscribe(subscription)
-            Spree::Event.subscribers[name].delete(event_action)
-          end
-        end
+        Spree::Event.subscribers.send(:unsubscribe, self)
       end
     end
   end
