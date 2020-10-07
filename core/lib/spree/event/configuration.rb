@@ -5,8 +5,13 @@ require 'spree/core/class_constantizer'
 module Spree
   module Event
     class Configuration
+      def subscriber_registry
+        @subscriber_registry ||= Spree::Event::SubscriberRegistry.new
+      end
+
       def subscribers
-        @subscribers ||= Spree::Event::Subscribers.new
+        Spree::Deprecation.warn("`Spree::Config.events.subscribers` is deprecated. Please use `Spree::Config.events.subscriber_registry`.", caller)
+        subscriber_registry
       end
 
       attr_writer :adapter, :suffix, :autoload_subscribers

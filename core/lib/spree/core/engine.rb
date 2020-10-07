@@ -47,12 +47,11 @@ module Spree
       # Setup Event Subscribers
       initializer 'spree.core.initialize_subscribers' do |app|
         app.reloader.to_prepare do
-          Spree::Event.require_subscriber_files
-          Spree::Event.subscribers.subscribe_all
+          Spree::Event.activate_autoloadable_subscribers
         end
 
         app.reloader.before_class_unload do
-          Spree::Event.subscribers.unsubscribe_all
+          Spree::Event.deactivate_subscribers
         end
       end
 

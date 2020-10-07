@@ -19,7 +19,12 @@ module Spree
     #     end
     #   end
     #
-    #  EmailSender.subscribe!
+    #  # Optional, required only when the subscriber needs to be loaded manually.
+    #  #
+    #  # If Spree::Config.events.autoload_subscribers is set to `true` and the module
+    #  # file matches the pattern `app/subscribers/**/*_subscriber.rb` then it will
+    #  # be loaded automatically at boot and this line can be removed:
+    #  EmailSender.activate
     module Subscriber
       def self.included(base)
         base.extend base
@@ -27,7 +32,7 @@ module Spree
         base.mattr_accessor :event_actions
         base.event_actions = {}
 
-        Spree::Event.subscribers.register(base)
+        Spree::Event.subscriber_registry.register(base)
       end
 
       # Declares a method name in the including module that can be subscribed/unsubscribed
@@ -65,24 +70,34 @@ module Spree
         event_actions[method_name] = (event_name || method_name).to_s
       end
 
-      # @deprecated Subscribes all declared event actions to their events. Only actions that are subscribed
+      # Activates all declared event actions to their events. Only actions that are activated
       # will be called when their event fires.
       #
-      # @example subscribe all event actions for module 'EmailSender'
-      #    EmailSender.subscribe!
-      def subscribe!
-        unsubscribe!
-        Spree::Deprecation.warn("#{name}.subscribe! is deprecated. Please move your event subscribers to folder `app/subscribers/*_subscriber.rb` and they will be loaded automatically. ", caller)
-        Spree::Event.subscribers.send(:subscribe, self)
+      # @example activate all event actions for module 'EmailSender'
+      #    EmailSender.activate
+      def activate
+        Spree::Event.subscriber_registry.activate_subscriber(self)
       end
 
-      # @deprecated Unsubscribes all declared event actions from their events. This means that when an event
-      # fires then none of its unsubscribed event actions will be called.
-      # @example unsubscribe all event actions for module 'EmailSender'
-      #    EmailSender.unsubscribe!
+      # Deactivates all declared event actions (or a single specific one) from their events.
+      # This means that when an event fires then none of its unsubscribed event actions will
+      # be called.
+      # @example deactivate all event actions for module 'EmailSender'
+      #    EmailSender.deactivate
+      # @example deactivate only order_finalized for module 'EmailSender'
+      #    EmailSender.deactivate(:order_finalized)
+      def deactivate(event_action_name=nil)
+        Spree::Event.subscriber_registry.deactivate_subscriber(self, event_action_name)
+      end
+
+      def subscribe!
+        Spree::Deprecation.warn("#{self}.subscribe! is deprecated. Please use `#{self}.activate`.")
+        activate
+      end
+
       def unsubscribe!
-        Spree::Deprecation.warn("#{name}.unsubscribe! is deprecated. Please move your event subscribers to folder `app/subscribers/*_subscriber.rb` and they will be unloaded automatically. ", caller)
-        Spree::Event.subscribers.send(:unsubscribe, self)
+        Spree::Deprecation.warn("#{self}.unsubscribe! is deprecated. Please use `#{self}.deactivate`.")
+        deactivate
       end
     end
   end

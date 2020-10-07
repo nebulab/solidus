@@ -37,13 +37,11 @@ RSpec.describe Spree::Order, type: :model do
       # all the ones set by MailerSubscriber module
       context 'when removing the default email notification subscription' do
         before do
-          allow(Spree::Deprecation).to receive(:warn)
-          Spree::MailerSubscriber.unsubscribe!
+          Spree::MailerSubscriber.deactivate(:order_finalized)
         end
 
         after do
-          allow(Spree::Deprecation).to receive(:warn)
-          Spree::MailerSubscriber.subscribe!
+          Spree::MailerSubscriber.activate
         end
 
         it 'does not send the email' do
@@ -54,13 +52,11 @@ RSpec.describe Spree::Order, type: :model do
 
       context 'when removing all the email notification subscriptions' do
         before do
-          allow(Spree::Deprecation).to receive(:warn)
-          Spree::MailerSubscriber.unsubscribe!
+          Spree::MailerSubscriber.deactivate
         end
 
         after do
-          allow(Spree::Deprecation).to receive(:warn)
-          Spree::MailerSubscriber.subscribe!
+          Spree::MailerSubscriber.activate
         end
 
         it 'does not send the email' do
