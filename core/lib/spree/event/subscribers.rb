@@ -2,23 +2,17 @@
 
 module Spree
   module Event
-    class Subscribers
-      attr_reader :mappings
-
-      def initialize
-        @mappings = {}
-      end
-
+    class Subscribers < Hash
       def register(subscriber)
-        mappings[subscriber.name] ||= {}
+        self[subscriber.name] ||= {}
       end
 
       def subscribe_all
-        mappings.each_key { |subscriber_name| subscribe(subscriber_name.constantize) }
+        self.each_key { |subscriber_name| subscribe(subscriber_name.constantize) }
       end
 
       def unsubscribe_all
-        mappings.each_key { |subscriber_name| unsubscribe(subscriber_name.constantize) }
+        self.each_key { |subscriber_name| unsubscribe(subscriber_name.constantize) }
       end
 
       private
@@ -30,16 +24,16 @@ module Spree
           # deprecated mappings, to be removed when Solidus 2.10 is not supported anymore:
           subscriber.send("#{event_action}_handler=", subscription)
 
-          mappings[subscriber.name][event_action] = subscription
+          self[subscriber.name][event_action] = subscription
         end
       end
 
       def unsubscribe(subscriber)
         subscriber.event_actions.keys.each do |event_action|
-          if (subscription = mappings.dig(subscriber.name, event_action))
+          if (subscription = self.dig(subscriber.name, event_action))
             Spree::Event.unsubscribe(subscription)
 
-            mappings[subscriber.name].delete(event_action)
+            self[subscriber.name].delete(event_action)
           end
         end
       end

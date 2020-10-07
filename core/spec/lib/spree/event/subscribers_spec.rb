@@ -23,8 +23,8 @@ RSpec.describe Spree::Event::Subscribers do
   describe '#register' do
     subject { subscribers.register(M) }
 
-    it 'adds the subscriber to the mappings as an empty array' do
-      expect { subject }.to change { subscribers.mappings['M'] }.from(nil).to({})
+    it 'adds the subscriber to the subscribers hash as an empty array' do
+      expect { subject }.to change { subscribers['M'] }.from(nil).to({})
     end
   end
 
@@ -32,16 +32,16 @@ RSpec.describe Spree::Event::Subscribers do
     subject { subscribers.subscribe_all }
 
     context 'When the subscriber was not registrered' do
-      it 'does not add the subscriber to the mappings' do
-        expect { subject }.not_to change { subscribers.mappings['M'] }
+      it 'does not add the subscriber to the subscribers hash' do
+        expect { subject }.not_to change { subscribers['M'] }
       end
     end
 
     context 'when the subscriber was registered' do
       before { subscribers.register(M) }
 
-      it 'adds the subscriber to the mappings' do
-        expect { subject }.to change { subscribers.mappings['M'] }.to({ event_name: asn_subscription })
+      it 'adds the subscriber to the subscribers hash' do
+        expect { subject }.to change { subscribers['M'] }.to({ event_name: asn_subscription })
       end
     end
   end
@@ -50,8 +50,8 @@ RSpec.describe Spree::Event::Subscribers do
     subject { subscribers.unsubscribe_all }
 
     context 'when the subscriber was not registered' do
-      it 'does not change the mappings' do
-        expect { subject }.not_to change { subscribers.mappings }
+      it 'does not change the subscribers hash' do
+        expect { subject }.not_to change { subscribers }
       end
     end
 
@@ -59,16 +59,16 @@ RSpec.describe Spree::Event::Subscribers do
       before { subscribers.register(M) }
 
       context 'when the subscriber was not subscribed' do
-        it 'does not change the mappings' do
-          expect { subject }.not_to change { subscribers.mappings }
+        it 'does not change the subscribers hash' do
+          expect { subject }.not_to change { subscribers }
         end
       end
 
       context 'when the subscriber was subscribed' do
         before { subscribers.subscribe_all }
 
-        it 'removes the subscription from the mappings' do
-          expect { subject }.to change { subscribers.mappings['M'] }.to({})
+        it 'removes the subscription from the subscribers hash' do
+          expect { subject }.to change { subscribers['M'] }.to({})
         end
       end
     end
