@@ -3,66 +3,19 @@
 module Spree
   module Admin
     class UsersController < ResourceController
-      class Search
-        def initialize(scope, fields, params)
-          @scope = scope
-          @params = params.presence || {}
-          @fields = fields
-        end
-
-        def [](name)
-          @params[name]
-        end
-
-        def result
-          @result ||= @fields.reduce(@scope) do |scope, field|
-            value = @params[field.name]
-            value.present? ? field.call(scope, value) : scope
-          end
-        end
-
-        # Hackery!
-        def is_a?(klass)
-          return true if klass == Ransack::Search
-          super
-        end
-
-        def method_missing(name, *args, &block)
-          if @fields.map(&:name).include?(name) && args.empty?
-            @params[name]
-          elsif @scope.respond_to?(name)
-            @scope.send(name, *args, &block)
-          else
-            super
-          end
-        end
-
-        class Field
-          attr_reader :name
-          def initialize(name, **options, &block)
-            @name = name
-            @options = options
-            @block = block
-          end
-
-          def call(scope, value)
-            @block.call(scope, value)
-          end
-        end
-      end
-
       SEARCH_FIELDS = [
-        Search::Field.new(:firstname) do |scope, value|
+        Indago::Field.new(:firstname) do |scope, value|
           addresses = Spree::Address.where("firstname LIKE ?", "%#{value}%").select(:id)
           scope.where(id: Spree::UserAddress.where(address_id: addresses).select(:user_id))
         end,
-        Search::Field.new(:email_cont) { |scope, value| scope.where("email LIKE ?", "%#{value}%") },
-        Search::Field.new(:spree_roles_id_in) do |scope, value|
+        # Indago::Field.new(:email_cont) { |scope, value| scope.where("email LIKE ?", "%#{value}%") },
+        Indago::Field.for(:email_cont),
+        Indago::Field.new(:spree_roles_id_in) do |scope, value|
           next scope if value.join.empty?
           scope.where(id: Spree::RoleUser.where(role_id: value).select(:user_id))
         end,
-        Search::Field.new(:created_at_lt) { |scope, value| where(created_at: ..value) },
-        Search::Field.new(:created_at_gt) { |scope, value| where(created_at: value..) },
+        Indago::Field.new(:created_at_lt) { |scope, value| where(created_at: ..value) },
+        Indago::Field.new(:created_at_gt) { |scope, value| where(created_at: value..) },
       ]
 
       rescue_from ActiveRecord::DeleteRestrictionError, with: :user_destroy_with_orders_error
@@ -186,7 +139,9 @@ module Spree
       def collection
         return @collection if @collection
 
-        @search = Search.new(super, SEARCH_FIELDS, params[:q])
+        Indago::Hackery.install! # make the search object look like a Ransack::Search
+
+        @search = Indago::Search.new(super, SEARCH_FIELDS, params[:q])
 
         @collection = @search.result.includes(:spree_roles)
         @collection = @collection.includes(:spree_orders)

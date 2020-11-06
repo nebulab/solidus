@@ -2,6 +2,8 @@
 
 source 'https://rubygems.org'
 
+gem 'indago', path: '../indago'
+
 group :backend, :frontend, :core, :api do
   gemspec require: false
 

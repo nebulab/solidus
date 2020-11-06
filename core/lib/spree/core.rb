@@ -11,6 +11,7 @@ require 'monetize'
 require 'paperclip'
 require 'paranoia'
 require 'ransack'
+require 'indago'
 require 'state_machines-activerecord'
 
 require 'spree/deprecation'
