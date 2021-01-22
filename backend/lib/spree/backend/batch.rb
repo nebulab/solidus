@@ -7,6 +7,7 @@ module Spree
 
       included do
         helper_method :batch_actions
+        before_action :batch_action_collection, only: [:preview_batch]
         helper 'spree/admin/actionable'
       end
 
@@ -29,6 +30,27 @@ module Spree
 
         def add_batch_actions(other_batch_actions)
           @batch_actions = batch_actions + other_batch_actions
+        end
+      end
+
+      def collection_actions
+        super + [:preview_batch]
+      end
+
+      def batch_action_collection
+        @batch_action_collection = @collection
+      end
+
+      def preview_batch
+        session[:return_to] = request.url
+
+        @batch_action_type = params[:batch_action_type]
+        @batch_action_name = @batch_action_type.constantize.new.class.name.demodulize.underscore
+
+        respond_to do |format|
+          format.js do
+            render inline: "$('#batch-preview .modal-body').html('<%= escape_javascript( render(partial: \"spree/admin/batch_actions/#{@batch_action_name}/preview\") ) %>')"
+          end
         end
       end
 

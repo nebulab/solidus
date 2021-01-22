@@ -9,6 +9,7 @@ Spree.Views.Tables.SelectableTable.Actions = Backbone.View.extend({
     this.selectableTable = options.selectableTable;
     this.actions = this.selectableTable.$el.data('actions');
     this.searchForm = $(this.selectableTable.$el.data('searchFormSelector')).clone();
+    this.previewBatchUrl = this.selectableTable.$el.data('previewBatchUrl');
 
     this.render();
   },
@@ -23,5 +24,42 @@ Spree.Views.Tables.SelectableTable.Actions = Backbone.View.extend({
   },
 
   previewBatchAction: function(e) {
+    var self = this;
+
+    var action = $(e.currentTarget).data('action');
+    var inputAction = document.createElement('input');
+    inputAction.name = 'batch_action_type';
+    inputAction.value = action;
+
+    if(this.selectableTable.$el.find('.selectAll:checked').length == 0) {
+      this.selectableTable.$el.find('.selectable:checked').each(function(_i, item){
+        self.searchForm.append($(item).clone());
+      })
+    }
+
+    this.searchForm.append(inputAction);
+
+    options = {
+      searchForm: this.searchForm,
+      action: action
+    }
+
+    Spree.ajax({
+      type: 'POST',
+      url: this.previewBatchUrl,
+      data: this.searchForm.serialize(),
+      success: function() {
+        Spree.Views.Modals.batchPreview().show(options);
+      },
+      error: function(msg) {
+        if (msg.responseJSON["error"]) {
+          show_flash('error', msg.responseJSON["error"]);
+        } else {
+          show_flash('error', "There was a problem adding this coupon code.");
+        }
+      }
+    });
+
+    this.searchForm = $(this.selectableTable.$el.data('searchFormSelector')).clone();
   }
 });
