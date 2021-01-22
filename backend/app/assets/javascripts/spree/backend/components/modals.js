@@ -14,4 +14,8 @@ Spree.ready(function() {
   $('#batch-preview').each(function() {
     Spree.Views.Modals.batchPreview($(this))
   })
+
+  $('#batch-result').each(function() {
+    Spree.Views.Modals.batchResult($(this))
+  })
 });

@@ -32,3 +32,4 @@
 //= require 'spree/backend/views/modals'
 //= require 'spree/backend/views/modals/batch'
 //= require 'spree/backend/views/modals/batch/preview'
+//= require 'spree/backend/views/modals/batch/result'
