@@ -5,6 +5,7 @@ Spree::Core::Engine.routes.draw do
     concern :actionable_routes do
       collection do
         post :preview_batch
+        post :process_batch
       end
     end
 

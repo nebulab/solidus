@@ -7,7 +7,7 @@ module Spree
 
       included do
         helper_method :batch_actions
-        before_action :batch_action_collection, only: [:preview_batch]
+        before_action :batch_action_collection, only: [:preview_batch, :process_batch]
         helper 'spree/admin/actionable'
       end
 
@@ -34,7 +34,7 @@ module Spree
       end
 
       def collection_actions
-        super + [:preview_batch]
+        super + [:preview_batch, :process_batch]
       end
 
       def batch_action_collection
@@ -50,6 +50,20 @@ module Spree
         respond_to do |format|
           format.js do
             render inline: "$('#batch-preview .modal-body').html('<%= escape_javascript( render(partial: \"spree/admin/batch_actions/#{@batch_action_name}/preview\") ) %>')"
+          end
+        end
+      end
+
+      def process_batch
+        session[:return_to] = request.url
+
+        @batch_action = params[:batch_action_type].constantize.new
+        @batch_action_name = @batch_action.class.name.demodulize.underscore
+        @result = @batch_action.call(batch_action_collection)
+
+        respond_to do |format|
+          format.js do
+            render inline: "$('#batch-result .modal-body').html('<%= escape_javascript( render(partial: \"spree/admin/batch_actions/#{@batch_action_name}/result\") ) %>')"
           end
         end
       end
