@@ -35,7 +35,7 @@ Spree::Core::Engine.routes.draw do
 
     resources :tax_categories
 
-    resources :products do
+    resources :products, concerns: :actionable_routes do
       resources :product_properties do
         collection do
           post :update_positions
