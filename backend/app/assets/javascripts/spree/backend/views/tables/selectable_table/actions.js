@@ -10,6 +10,7 @@ Spree.Views.Tables.SelectableTable.Actions = Backbone.View.extend({
     this.actions = this.selectableTable.$el.data('actions');
     this.searchForm = $(this.selectableTable.$el.data('searchFormSelector')).clone();
     this.previewBatchUrl = this.selectableTable.$el.data('previewBatchUrl');
+    this.processBatchUrl = this.selectableTable.$el.data('processBatchUrl');
 
     this.render();
   },
@@ -40,6 +41,7 @@ Spree.Views.Tables.SelectableTable.Actions = Backbone.View.extend({
     this.searchForm.append(inputAction);
 
     options = {
+      processBatchUrl: this.processBatchUrl,
       searchForm: this.searchForm,
       action: action
     }

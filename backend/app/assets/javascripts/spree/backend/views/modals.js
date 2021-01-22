@@ -22,4 +22,11 @@ Spree.Views.Modals = {
     return this.modalBatchPreview;
   },
 
+  batchResult: function($el = null) {
+    if($el != null) {
+      this.modalBatchResult = new Spree.Views.Modals.Batch.Result({el: $el})
+    }
+
+    return this.modalBatchResult;
+  }
 };
