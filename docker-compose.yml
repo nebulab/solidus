@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+
+  postgres:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+
+  app:
+    build: .
+    image: solidus
+    command: bash -c "(bundle check || bundle) && tail -f Gemfile"
+    environment:
+      CAPYBARA_DRIVER: selenium_chrome_headless_docker_friendly
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      RAILS_VERSION: ${RAILS_VERSION:-~> 6.1.0}
+      DB_ALL: "1"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/home/solidus_user/app
+      - bundle:/home/solidus_user/gems
+    tty: true
+    stdin_open: true
+    tmpfs:
+      - /tmp
+    links:
+      - mysql
+      - postgres
+
+volumes:
+  bundle:

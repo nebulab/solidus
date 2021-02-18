@@ -238,6 +238,8 @@ and/or customizations to the Solidus admin. Use at your own risk.
   cd solidus
   ```
 
+### Without Docker
+
 * Install the gem dependencies
 
   ```bash
@@ -255,6 +257,45 @@ and/or customizations to the Solidus admin. Use at your own risk.
   export DB=mysql
   bin/setup
   ```
+
+### With Docker
+
+```bash
+docker-compose up -d
+```
+
+Wait for all the gems to be installed (progress can be checked through `docker-compose logs -f app`).
+
+You can provide the ruby version you want your image to use:
+
+```bash
+docker-compose build --build-arg ruby_version=2.6 app
+docker-compose up -d
+```
+
+The rails version can be customized at runtime through `RAILS_VERSION` environment variable:
+
+```bash
+RAILS_VERSION='~> 5.0' docker-compose up -d
+```
+
+Running tests:
+
+```bash
+# sqlite
+docker-compose exec app bin/rspec
+# postgres
+docker-compose exec app env DB=postgres bin/rspec
+# mysql
+docker-compose exec app env DB=mysql bin/rspec
+```
+
+In order to be able to access the [sandbox application](#sandbox), just make sure to provide the appropriate `--binding` option to `rails server`. Keep in mind that only port `3000` is exposed.
+
+```bash
+docker-compose exec app bin/sandbox
+docker-compose exec app bin/rails server --binding 0.0.0.0
+```
 
 ### Sandbox
 
