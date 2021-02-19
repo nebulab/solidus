@@ -46,7 +46,6 @@ Capybara.default_max_wait_time = ENV['DEFAULT_MAX_WAIT_TIME'].to_f if ENV['DEFAU
 require "selenium/webdriver"
 require 'webdrivers'
 Capybara.register_driver :selenium_chrome_headless_docker_friendly do |app|
-  Capybara::Selenium::Driver.load_selenium
   browser_options = ::Selenium::WebDriver::Chrome::Options.new
   browser_options.args << '--headless'
   browser_options.args << '--disable-gpu'
