@@ -1,6 +1,22 @@
-<% db = ENV['DB'] %>
+<% db = case ENV['DB']
+        when 'mysql'
+          'mysql'
+        when 'postgres', 'postgresql'
+          'postgres'
+        when 'sqlite', '', nil
+          'sqlite'
+        else
+          raise "Invalid DB specified: #{ENV['DB']}"
+        end %>
+<% db_host = case db
+             when 'mysql'
+               ENV['DB_MYSQL_HOST'] || ENV['DB_HOST']
+             when 'postgres'
+               ENV['DB_POSTGRES_HOST'] || ENV['DB_HOST']
+             else
+               ENV['DB_HOST']
+             end %>
 <% db_prefix = ENV['LIB_NAME'].presence || "solidus" %>
-<% db_host = ENV['DB_HOST'] || ENV['DB'] %>
 <% db_username = ENV['DB_USERNAME'] %>
 <% db_password = ENV['DB_PASSWORD'] %>
 <% case db
@@ -18,7 +34,7 @@ test:
   host: <%= db_host %>
   <% end %>
   encoding: utf8
-<% when 'postgres', 'postgresql' %>
+<% when 'postgres' %>
 test:
   adapter: postgresql
   database: <%= db_prefix %>_test
@@ -30,11 +46,9 @@ test:
   host: <%= db_host %>
   <% end %>
   min_messages: warning
-<% when 'sqlite', '', nil %>
+<% when 'sqlite' %>
 test:
   adapter: sqlite3
   database: db/<%= db_prefix %>_test.sqlite3
   timeout: 10000
-<% else %>
-  <% raise "Invalid DB specified: #{ENV['DB']}" %>
 <% end %>

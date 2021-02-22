@@ -23,6 +23,8 @@ services:
       DB_PASSWORD: password
       RAILS_VERSION: ${RAILS_VERSION:-~> 6.1.0}
       DB_ALL: "1"
+      DB_MYSQL_HOST: mysql
+      DB_POSTGRES_HOST: postgres
     ports:
       - "3000:3000"
     volumes:
