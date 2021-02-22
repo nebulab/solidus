@@ -269,7 +269,7 @@ Wait for all the gems to be installed (progress can be checked through `docker-c
 You can provide the ruby version you want your image to use:
 
 ```bash
-docker-compose build --build-arg ruby_version=2.6 app
+docker-compose build --build-arg RUBY_VERSION=2.6 app
 docker-compose up -d
 ```
 
