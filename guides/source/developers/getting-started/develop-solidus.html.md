@@ -183,6 +183,17 @@ docker-compose exec app env DB=postgres bin/rspec
 docker-compose exec app env DB=mysql bin/rspec
 ```
 
+Database engine clients are also available:
+
+```bash
+# sqlite
+docker-compose exec app sqlite3 /path/to/db
+# postgres
+docker-compose exec app env PGPASSWORD=password psql -U root -h postgres
+# mysql
+docker-compose exec app mysql -u root -h mysql -ppassword
+```
+
 In order to be able to access the [sandbox
 application](#create-a-sandbox-application), just make sure to provide the
 appropriate `--binding` option to `rails server`. Keep in mind that only port

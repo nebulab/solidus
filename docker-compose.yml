@@ -6,16 +6,28 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - mysql:/var/lib/mysql
 
   postgres:
-    image: postgres:9.6
+    image: postgres:13.2
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: password
+    volumes:
+      - postgres:/var/lib/postgresql/data
 
   app:
-    build: .
-    image: solidus
+    build:
+      context: .dockerdev
+      dockerfile: Dockerfile
+      args:
+        RUBY_VERSION: "2.7.2"
+        PG_VERSION: 13
+        NODE_VERSION: 14
+        MYSQL_VERSION: "8.0"
+        BUNDLER_VERSION: 2
+    image: solidus-3.0.0.rc1
     command: bash -c "(bundle check || bundle) && tail -f Gemfile"
     environment:
       CAPYBARA_DRIVER: selenium_chrome_headless_docker_friendly
@@ -25,18 +37,25 @@ services:
       DB_ALL: "1"
       DB_MYSQL_HOST: mysql
       DB_POSTGRES_HOST: postgres
+      HISTFILE: "/home/solidus_user/history/bash_history"
+      MYSQL_HISTFILE: "/home/solidus_user/history/mysql_history"
     ports:
       - "3000:3000"
     volumes:
-      - .:/home/solidus_user/app
+      - .:/home/solidus_user/app:cached
       - bundle:/home/solidus_user/gems
+      - history:/home/solidus_user/history
+      - .dockerdev/.psqlrc:/home/solidus_user/.psqlrc
     tty: true
     stdin_open: true
     tmpfs:
       - /tmp
-    links:
+    depends_on:
       - mysql
       - postgres
 
 volumes:
   bundle:
+  history:
+  postgres:
+  mysql:
