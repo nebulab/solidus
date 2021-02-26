@@ -33,6 +33,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get -yq dist-upgrad
     libpq-dev \
     postgresql-client-$PG_VERSION \
     mysql-client \
+    nodejs \
   &&  rm -rf /var/lib/apt/lists/*
 
 ENV APP_USER=solidus_user \
