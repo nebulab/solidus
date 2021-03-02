@@ -301,11 +301,15 @@ docker-compose exec app env PGPASSWORD=password psql -U root -h postgres
 docker-compose exec app mysql -u root -h mysql -ppassword
 ```
 
-In order to be able to access the [sandbox application](#sandbox), just make sure to provide the appropriate `--binding` option to `rails server`. Keep in mind that only port `3000` is exposed.
+In order to be able to access the [sandbox application](#sandbox), just make
+sure to provide the appropriate `--binding` option to `rails server`. By
+default, port `3000` is exposed, but you can change it through `SANDBOX_PORT`
+environment variable:
 
 ```bash
+SANDBOX_PORT=4000 docker-compose up -d
 docker-compose exec app bin/sandbox
-docker-compose exec app bin/rails server --binding 0.0.0.0
+docker-compose exec app bin/rails server --binding 0.0.0.0 --port 4000
 ```
 
 ### Sandbox

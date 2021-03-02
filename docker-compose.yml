@@ -41,7 +41,7 @@ services:
       MYSQL_HISTFILE: "/home/solidus_user/history/mysql_history"
       RAILS_ENV: development
     ports:
-      - "3000:3000"
+      - "${SANDBOX_PORT:-3000}:${SANDBOX_PORT:-3000}"
     volumes:
       - .:/home/solidus_user/app:delegated
       - bundle:/home/solidus_user/gems:cached
