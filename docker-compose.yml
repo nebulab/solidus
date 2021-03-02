@@ -39,6 +39,7 @@ services:
       DB_POSTGRES_HOST: postgres
       HISTFILE: "/home/solidus_user/history/bash_history"
       MYSQL_HISTFILE: "/home/solidus_user/history/mysql_history"
+      RAILS_ENV: development
     ports:
       - "3000:3000"
     volumes:
