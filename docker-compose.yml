@@ -28,7 +28,7 @@ services:
         MYSQL_VERSION: "8.0"
         BUNDLER_VERSION: 2
     image: solidus-3.0.0.rc1
-    command: bash -c "(bundle check || bundle) && tail -f Gemfile"
+    command: bash -c "(bundle check || bundle) && tail -f /dev/null"
     environment:
       CAPYBARA_DRIVER: selenium_chrome_headless_docker_friendly
       DB_USERNAME: root
