@@ -13,9 +13,12 @@ end
 
 FactoryBot.define do
   factory :base_product, class: 'Spree::Product' do
+    transient do
+      store { create(:store) }
+      price { 19.99 }
+    end
     sequence(:name) { |n| "Product ##{n} - #{Kernel.rand(9999)}" }
     description { "As seen on TV!" }
-    price { 19.99 }
     cost_price { 17.00 }
     sku { generate(:sku) }
     available_on { 1.year.ago }
@@ -24,6 +27,10 @@ FactoryBot.define do
 
     # ensure stock item will be created for this products master
     before(:create) { create(:stock_location) if Spree::StockLocation.count == 0 }
+
+    after(:create) do |product, evaluator|
+      product.update_default_price_amount(evaluator.store, evaluator.price)
+    end
 
     factory :custom_product do
       name { 'Custom Product' }

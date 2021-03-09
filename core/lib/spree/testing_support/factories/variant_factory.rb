@@ -14,7 +14,11 @@ FactoryBot.define do
   sequence(:random_float) { BigDecimal("#{rand(200)}.#{rand(99)}") }
 
   factory :base_variant, class: 'Spree::Variant' do
-    price { 19.99 }
+    transient do
+      store { create(:store) }
+      price { 19.99 }
+    end
+
     cost_price { 17.00 }
     sku { generate(:sku) }
     is_master { 0 }
@@ -24,6 +28,9 @@ FactoryBot.define do
 
     # ensure stock item will be created for this variant
     before(:create) { create(:stock_location) if Spree::StockLocation.count == 0 }
+    after(:create) do |variant, evaluator|
+      variant.update_default_price_amount(evaluator.store, evaluator.price)
+    end
 
     factory :variant do
       # on_hand 5

@@ -11,7 +11,8 @@ end
 
 RSpec.describe Spree::Product, type: :model do
   context 'product instance' do
-    let(:product) { create(:product) }
+    let(:store) { create(:store) }
+    let(:product) { create(:product, store: store) }
     let(:variant) { create(:variant, product: product) }
 
     context '#duplicate' do
@@ -95,17 +96,17 @@ RSpec.describe Spree::Product, type: :model do
       context "when master default price changed" do
         before do
           master = product.master
-          master.default_price.price = 11
+          master.default_price(store).price = 11
           master.save!
           product.update_columns(updated_at: 1.day.ago)
-          product.master.default_price.price = 12
+          product.master.default_price(store).price = 12
         end
 
         it_behaves_like "a change occurred"
 
         it "saves the default_price" do
           product.save!
-          expect(product.reload.master.default_price.price).to eq 12
+          expect(product.reload.master.default_price(store).price).to eq 12
         end
       end
     end

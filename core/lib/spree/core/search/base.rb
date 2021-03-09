@@ -8,8 +8,8 @@ module Spree
         attr_accessor :current_user
         attr_accessor :pricing_options
 
-        def initialize(params)
-          self.pricing_options = Spree::Config.default_pricing_options
+        def initialize(params, store)
+          self.pricing_options = Spree::Config.default_pricing_options(store)
           @properties = {}
           prepare(params)
         end

@@ -66,14 +66,11 @@ module Spree
       autosave: true
 
     before_validation :set_cost_currency
-    before_validation :set_price, if: -> { product && product.master }
     before_validation :build_vat_prices, if: -> { rebuild_vat_prices? || new_record? && product }
 
     validates :product, presence: true
-    validate :check_price
 
     validates :cost_price, numericality: { greater_than_or_equal_to: 0, allow_nil: true }
-    validates :price,      numericality: { greater_than_or_equal_to: 0, allow_nil: true }
     validates_uniqueness_of :sku, allow_blank: true, case_sensitive: true, if: :enforce_unique_sku?
 
     after_create :create_stock_items
@@ -364,17 +361,6 @@ module Spree
       if product.master && product.master.in_stock?
         product.master.stock_items.update_all(backorderable: false)
         product.master.stock_items.each(&:reduce_count_on_hand_to_zero)
-      end
-    end
-
-    # Ensures a new variant takes the product master price when price is not supplied
-    def set_price
-      self.price = product.master.price if price.nil? && Spree::Config[:require_master_price] && !is_master?
-    end
-
-    def check_price
-      if price.nil? && Spree::Config[:require_master_price] && is_master?
-        errors.add :price, 'Must supply price for variant or master.price for product.'
       end
     end
 

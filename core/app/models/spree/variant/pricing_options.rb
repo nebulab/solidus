@@ -19,9 +19,9 @@ module Spree
       # @see #initialize
       # @return [Hash] The attributes that admin prices usually have
       #
-      def self.default_price_attributes
+      def self.default_price_attributes(store)
         {
-          currency: Spree::Config.currency,
+          currency: store&.default_currency || Spree::Config.currency,
           country_iso: Spree::Config.admin_vat_country_iso
         }
       end
@@ -34,10 +34,10 @@ module Spree
       #
       def self.from_line_item(line_item)
         tax_address = line_item.order.try!(:tax_address)
-        new(
-          currency: line_item.currency || Spree::Config.currency,
+        new({ 
+          currency: line_item.currency,
           country_iso: tax_address && tax_address.country.try!(:iso)
-        )
+        })
       end
 
       # This creates the correct pricing options for a price, so that we can easily find other prices
@@ -46,24 +46,28 @@ module Spree
       # @return [Spree::Variant::PricingOptions] pricing options for pricing a line item
       #
       def self.from_price(price)
-        new(currency: price.currency, country_iso: price.country_iso)
+        new({
+          currency: price.currency,
+          country_iso: price.country_iso
+        })
       end
 
       # This creates the correct pricing options for a price, so the store owners can easily customize how to
       # find the pricing based on the view context, having available current_store, current_spree_user, request.host_name, etc.
       # @return [Spree::Variant::PricingOptions] pricing options for pricing a line item
       def self.from_context(context)
-        new(
-          currency: context.current_store.try!(:default_currency).presence || Spree::Config[:currency],
+        new({
           country_iso: context.current_store.try!(:cart_tax_country_iso).presence
-        )
+        }, context.current_store)
       end
 
       # @return [Hash] The hash of exact desired attributes
       attr_reader :desired_attributes
 
-      def initialize(desired_attributes = {})
-        @desired_attributes = self.class.default_price_attributes.merge(desired_attributes)
+      def initialize(desired_attributes = {}, store = nil)
+        raise 'You need to provide :currency attribute or store' unless desired_attributes.key?(:currency) || store
+
+        @desired_attributes = self.class.default_price_attributes(store).merge(desired_attributes)
       end
 
       # A slightly modified version of the `desired_attributes` Hash. Instead of

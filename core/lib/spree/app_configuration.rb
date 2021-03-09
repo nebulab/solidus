@@ -293,8 +293,8 @@ module Spree
     # Shortcut for the default pricing options
     # @return [variant_price_selector_class] An instance of the pricing options class with default desired
     #   attributes
-    def default_pricing_options
-      pricing_options_class.new
+    def default_pricing_options(store)
+      pricing_options_class.new({}, store)
     end
 
     class_name_attribute :variant_search_class, default: 'Spree::Core::Search::Variant'

@@ -70,10 +70,9 @@ module Spree
       :cost_price,
       :depth,
       :height,
-      :price,
       :sku,
       :weight,
-      :width,
+      :width
     ]
     MASTER_ATTRIBUTES.each do |attr|
       delegate :"#{attr}", :"#{attr}=", to: :find_or_build_master
@@ -86,6 +85,10 @@ module Spree
              :images,
              :price_for,
              :rebuild_vat_prices=,
+             :update_default_price_amount,
+             :default_price,
+             :price,
+             :price=,
              to: :find_or_build_master
 
     alias_method :master_images, :images
@@ -108,7 +111,6 @@ module Spree
     validates :meta_keywords, length: { maximum: 255 }
     validates :meta_title, length: { maximum: 255 }
     validates :name, presence: true
-    validates :price, presence: true, if: proc { Spree::Config[:require_master_price] }
     validates :shipping_category_id, presence: true
     validates :slug, presence: true, uniqueness: { allow_blank: true, case_sensitive: true }
 
@@ -304,7 +306,6 @@ module Spree
       values.each do |ids|
         variants.create(
           option_value_ids: ids,
-          price: master.price
         )
       end
       save
