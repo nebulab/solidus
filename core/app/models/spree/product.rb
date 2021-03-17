@@ -61,6 +61,17 @@ module Spree
     has_many :line_items, through: :variants_including_master
     has_many :orders, through: :line_items
 
+    scope :sort_by_master_default_price_amount_asc, -> {
+      with_default_price.order('prices.amount ASC')
+    }
+    scope :sort_by_master_default_price_amount_desc, -> {
+      with_default_price.order('prices.amount DESC')
+    }
+    scope :with_default_price, -> {
+      joins(master: :prices)
+        .where(master: { prices: Spree::Config.default_pricing_options.desired_attributes })
+    }
+
     def find_or_build_master
       master || build_master
     end
