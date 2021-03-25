@@ -2,6 +2,13 @@
 
 Spree::Core::Engine.routes.draw do
   namespace :admin do
+    concern :actionable_routes do
+      collection do
+        post :preview_batch
+        post :process_batch
+      end
+    end
+
     get '/search/users', to: "search#users", as: :search_users
     get '/search/products', to: "search#products", as: :search_products
 
@@ -28,7 +35,7 @@ Spree::Core::Engine.routes.draw do
 
     resources :tax_categories
 
-    resources :products do
+    resources :products, concerns: :actionable_routes do
       resources :product_properties do
         collection do
           post :update_positions

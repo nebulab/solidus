@@ -1,6 +1,10 @@
 <th>
   <input type="checkbox" {{#if all_items_selected}}checked="checked"{{/if}} name="select-all" class="selectAll" id="select-all" value="1">
 </th>
-<th colspan="{{colspan}}">
+<th colspan="{{colspan}}" class="label">
   {{item_selected_label}}
 </th>
+{{#if actionable}}
+<th colspan="{{actionableColspan}}" class="actions">
+</th>
+{{/if}}

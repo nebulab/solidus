@@ -5,6 +5,11 @@ module Spree
     class ProductsController < ResourceController
       helper 'spree/products'
 
+      include Spree::Backend::Batch
+      set_batch_actions [
+        { action: 'Spree::BatchAction::DestroyRecordAction', icon: :trash, label: :delete }
+      ]
+
       before_action :load_data, except: [:index]
       update.before :update_before
       helper_method :clone_object_url
