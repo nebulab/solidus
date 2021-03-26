@@ -17,6 +17,6 @@ FactoryBot.modify do
   #
   factory :address do
     zipcode { '21088-0255' }
-    lastname { 'Doe' }
+    # lastname { 'Doe' }
   end
 end

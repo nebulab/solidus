@@ -51,16 +51,18 @@ module SolidusPaypalBraintree
         zipcode: zip
       )
 
-      if !first_name.nil?
-        ::Spree::Deprecation.warn("first_name and last_name are deprecated. Use name instead.", caller)
-        address.first_name = first_name
-        address.last_name = last_name || "(left blank)"
-      elsif address.respond_to? :name
-        address.name = name
+      if address.respond_to? :name
+        address.name = first_name ? [first_name, last_name].join(" ") : name
       else
-        first_name, last_name = split_name(name)
-        address.first_name = first_name
-        address.last_name = last_name || "(left blank)"
+        ::Spree::Deprecation.warn("first_name and last_name are deprecated. Use name instead.", caller)
+        if first_name
+          address.first_name = first_name
+          address.last_name = last_name
+        else
+          first_name, last_name = split_name(name)
+          address.first_name = first_name
+          address.last_name = last_name || "(left blank)"
+        end
       end
 
       if spree_state

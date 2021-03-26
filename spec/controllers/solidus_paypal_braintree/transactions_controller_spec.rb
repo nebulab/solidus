@@ -101,7 +101,7 @@ RSpec.describe SolidusPaypalBraintree::TransactionsController, type: :controller
           # the transaction import only creates 1 new one
           order
           expect { post_create }.to change { Spree::Address.count }.by(1)
-          expect(Spree::Address.last.full_name).to eq "Wade Wilson"
+          expect(Spree::Address.last.name).to eq "Wade Wilson"
         end
       end
 

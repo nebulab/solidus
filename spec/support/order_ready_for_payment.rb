@@ -2,7 +2,7 @@ shared_context 'when order is ready for payment' do
   let!(:country) { create :country }
 
   let(:user) { create :user }
-  let(:address) { create :address, zipcode: "90210", lastname: "Doe", country: country }
+  let(:address) { create :address, zipcode: "90210", name: "Doe", country: country }
 
   before do
     create :shipping_method, cost: 5

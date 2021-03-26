@@ -14,7 +14,7 @@ module SolidusPaypalBraintree
         postalCode: spree_address.zipcode,
         countryCode: spree_address.country.iso,
         phone: spree_address.phone,
-        recipientName: spree_address.full_name
+        recipientName: spree_address.name
       }
 
       if ::Spree::Config.address_requires_state && spree_address.country.states_required

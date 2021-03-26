@@ -20,7 +20,7 @@ gem 'sassc-rails', platforms: :mri
 
 # bourbon 5 doesn't work under sassc
 # https://github.com/thoughtbot/bourbon/issues/1047
-gem 'bourbon', '<5'
+gem 'bourbon'
 
 case ENV['DB']
 when 'mysql'
@@ -41,3 +41,6 @@ gemspec
 # Use a local Gemfile to include development dependencies that might not be
 # relevant for the project or for other contributors, e.g.: `gem 'pry-debug'`.
 eval_gemfile 'Gemfile-local' if File.exist? 'Gemfile-local'
+
+
+gem 'pry'
