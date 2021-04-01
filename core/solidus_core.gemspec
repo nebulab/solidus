@@ -42,6 +42,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'kt-paperclip', '~> 6.3'
   s.add_dependency 'ransack', '~> 2.0'
   s.add_dependency 'state_machines-activerecord', '~> 0.6'
+  s.add_dependency 'dry-core', '~> 0.5'
+  s.add_dependency 'dry-struct', '~> 1.4'
+  s.add_dependency 'dry-monads', '~> 1.3'
 
   s.post_install_message = <<-MSG
 -------------------------------------------------------------

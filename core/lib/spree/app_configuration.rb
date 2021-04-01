@@ -455,6 +455,14 @@ module Spree
     # Enumerable of taxons adhering to the present_taxon_class interface
     class_name_attribute :taxon_attachment_module, default: 'Spree::Taxon::ActiveStorageAttachment'
 
+    # Service to manage order when switching currency
+    #
+    # `Spree::SwitchCurrencyService` is the default.
+    #
+    # @!attribute [rw] switch_currency_service_class
+    # @return [Class]
+    class_name_attribute :switch_currency_service_class, default: 'Spree::SwitchCurrencyService'
+
     # Allows providing your own class instance for generating order numbers.
     #
     # @!attribute [rw] order_number_generator
