@@ -67,6 +67,8 @@ module Spree
             require_dependency file
           end
         end
+
+        Container.finalize! if Rails.env.production?
       end
     end
   end
