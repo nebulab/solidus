@@ -2,6 +2,10 @@
 
 module Spree
   class CurrenciesController < Spree::StoreController
+    include Injector[
+      :switch_currency_service
+    ]
+
     def set
       switch_currency(params[:switch_to_currency])
 
@@ -10,12 +14,6 @@ module Spree
       end
 
       redirect_back(fallback_location: root_path)
-    end
-
-    private
-
-    def switch_currency_service
-      Spree::Config.switch_currency_service_class.new
     end
   end
 end

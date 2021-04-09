@@ -45,6 +45,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'dry-core', '~> 0.5'
   s.add_dependency 'dry-struct', '~> 1.4'
   s.add_dependency 'dry-monads', '~> 1.3'
+  s.add_dependency 'dry-system', '~> 0.18'
 
   s.post_install_message = <<-MSG
 -------------------------------------------------------------
