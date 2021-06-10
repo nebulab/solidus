@@ -167,7 +167,11 @@ module Solidus
 
     def run_bundle_install_if_needed_by_plugins
       @plugins_to_be_installed.each do |plugin_name|
-        gem plugin_name
+        if plugin_name == 'solidus_auth_devise'
+          gem plugin_name, github: 'waiting-for-dev/solidus_auth_devise', branch: 'waiting-for-dev/adapt_to_solidus_support'
+        else
+          gem plugin_name, **options
+        end
       end
 
       bundle_cleanly{ run "bundle install" } if @plugins_to_be_installed.any?
