@@ -195,9 +195,11 @@ describe "Visiting Products", type: :feature, inaccessible: true do
       v2.images.create!(attachment: image)
     end
 
-    it "should not display no image available" do
-      visit spree.root_path
-      expect(page).to have_xpath("//img[contains(@src,'blank')]")
+    100.times do |i|
+      it "should not display no image available - #{i}" do
+        visit spree.root_path
+        expect(page).to have_xpath("//img[contains(@src,'blank')]")
+      end
     end
   end
 
