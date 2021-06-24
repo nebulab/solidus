@@ -5,6 +5,11 @@
 <% end %>
 
 <div data-hook="homepage_products">
+  <%
+    puts "cache_key_for_products: #{cache_key_for_products}"
+    puts
+  %>
+
   <% cache(cache_key_for_products) do %>
     <%= render partial: 'spree/shared/products', locals: { products: @products } %>
   <% end %>

@@ -26,6 +26,17 @@
     <% products.each do |product| %>
       <% url = spree.product_path(product, taxon_id: @taxon.try(:id)) %>
       <li id="product_<%= product.id %>" class="columns three <%= cycle("alpha", "secondary", "", "omega secondary", name: "classes") %>" data-hook="products_list_item" itemscope itemtype="http://schema.org/Product">
+        <%
+          if product.name == "Ruby on Rails Baseball Jersey"
+            puts "Ruby on Rails Baseball Jersey details:"
+            puts "Time.current: #{Time.current}"
+            puts "cache_key: #{@taxon.present? ? [I18n.locale, current_pricing_options, @taxon, product] : [I18n.locale, current_pricing_options, product]}"
+            puts "product.variants.first.images.first: #{product.variants.first&.images&.first}"
+            puts "product.gallery.images.first: #{product.gallery.images.first}"
+            puts
+          end
+        %>
+
         <% cache(@taxon.present? ? [I18n.locale, current_pricing_options, @taxon, product] : [I18n.locale, current_pricing_options, product]) do %>
           <div class="product-image">
             <%= link_to(render('spree/shared/image', image: product.gallery.images.first, size: :small, itemprop: "image"), url, itemprop: 'url') %>
