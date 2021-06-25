@@ -10,6 +10,10 @@ describe "Visiting Products", type: :feature, inaccessible: true do
   end
 
   before(:each) do
+    ActionController::Base.perform_caching = true
+
+    puts "ActionController::Base.perform_caching: #{ActionController::Base.perform_caching}"
+
     visit spree.root_path
   end
 

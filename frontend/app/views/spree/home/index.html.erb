@@ -6,13 +6,19 @@
 
 <div data-hook="homepage_products">
   <%
-    puts '----------'
+    puts '<<<'
     puts "cache_key_for_products: #{cache_key_for_products}"
     puts "@products.map(&:updated_at).uniq: #{@products.map(&:updated_at).map(&:to_s).uniq}"
+    puts ">>>\n"
   %>
 
   <% cache(cache_key_for_products) do %>
+    <%
+      puts '<<<'
+      puts "rendering spree/shared/products..."
+      puts ">>>\n"
+    %>
+
     <%= render partial: 'spree/shared/products', locals: { products: @products } %>
   <% end %>
 </div>
-
