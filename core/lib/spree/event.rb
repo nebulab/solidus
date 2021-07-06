@@ -6,44 +6,102 @@ require_relative 'event/configuration'
 require_relative 'event/subscriber'
 
 module Spree
+  # Event bus for Solidus.
+  #
+  # This module serves as the interface to access the Event Bus system in
+  # Solidus. You can use different underlying adapters to provide the core
+  # logic. It's recommended that you use {Spree::Event::Adapters::EventBus}.
+  #
+  # You use the {#fire} method to trigger an event:
+  #
+  #  @example
+  #    Spree::Event.fire 'order_finalized', order: order
+  #
+  # Then, you can use {#subscribe} to hook into the event:
+  #
+  #   @example
+  #     Spree::Event.subscribe 'order_finalized' do |event|
+  #       # Take the order at event.payload[:order]
+  #     end
+  #
+  # You can also subscribe to an event through a module including
+  # {Spree::Event::Subscriber}:
+  #
+  #  @example
+  #    module MySubscriber
+  #      include Spree::Event::Subscriber
+  #
+  #      event_action :order_finalized
+  #
+  #      def order_finalized(event)
+  #        # Again, take the order at event.payload[:order]
+  #      end
+  #    end
   module Event
     extend self
 
     delegate :activate_autoloadable_subscribers, :activate_all_subscribers, :deactivate_all_subscribers, to: :subscriber_registry
 
-    # Allows to trigger events that can be subscribed using #subscribe. An
-    # optional block can be passed that will be executed immediately. The
-    # actual code implementation is delegated to the adapter.
+    # Allows to trigger events that can be subscribed using {#subscribe}.
     #
-    # @param [String] event_name the name of the event. The suffix ".spree"
-    #  will be added automatically if not present
-    # @param [Hash] opts a list of options to be passed to the triggered event
+    # The actual code implementation is delegated to the adapter.
+    #
+    # @param [String, Symbol] event_name the name of the event.
+    # @param [Hash] opts a list of options to be passed to the triggered event.
+    # They will be made available through the {Spree::Event::Event} instance
+    # that is yielded to the subscribers (see {Spree::Event::Event#payload}).
+    # However, take into account that the deprecated
+    # {Spree::Event::Adapters::ActiveSupportNotifications} adapter will yield a
+    # {ActiveSupport::Notifications::Fanout::Subscribers::Timed} instance
+    # instead.
+    # @option opts [Any] :adapter Reserved to indicate the adapter to use as
+    # event bus. Defaults to {#default_adapter}
     #
     # @example Trigger an event named 'order_finalized'
     #   Spree::Event.fire 'order_finalized', order: @order do
     #     @order.finalize!
     #   end
+    #
+    # TODO: Change opts to be keyword arguments and include `adapter:` in them
     def fire(event_name, opts = {})
-      adapter.fire normalize_name(event_name), opts do
-        yield opts if block_given?
+      adapter = opts.delete(:adapter) || default_adapter
+      if block_given? && !legacy_adapter(adapter)
+        raise ArgumentError, <<~MSG
+          Blocks passed to `Spree::Event.fire` are ignored unless the adapter is
+          `Spree::Event::Adapters::ActiveSupportNotifications` (which is
+          deprecated). Please, instead of:
+
+            Spree::Event.fire 'event_name', order: order do
+              order.do_something
+            end
+
+          Use:
+
+            order.do_something
+            Spree::Event.fire 'event_name', order: order
+
+        MSG
+      elsif block_given?
+        yield opts
       end
+      adapter.fire normalize_name(event_name), opts
     end
 
-    # Subscribe to an event with the given name. The provided block is executed
-    # every time the subscribed event is fired.
+    # Subscribe to events matching the given name.
     #
-    # @param [String, Regexp] event_name the name of the event.
-    #  When String, the suffix ".spree" will be added automatically if not present,
-    #  when using the default adapter for ActiveSupportNotifications.
-    #  When Regexp, due to the unpredictability of all possible regexp combinations,
-    #  adding the suffix is developer's responsibility (if you don't, you will
-    #  subscribe to all notifications, including internal Rails notifications
-    #  as well).
+    # The provided block is executed every time the subscribed event is fired.
     #
-    # @see Spree::Event::Adapters::ActiveSupportNotifications#normalize_name
+    # @param [String, Symbol, Regexp] event_name the name of the event. When it's a
+    # {Regexp} it subscribes to all that match.
+    # @param [Any] adapter the event bus adapter to use.
+    # @yield block to execute when an event is triggered
     #
-    # @return a subscription object that can be used as reference in order
-    #  to remove the subscription
+    # @return [Spree::Event::Listener] a subscription object that can be used as
+    # reference in order to remove the subscription. However, take into account
+    # that the deprecated {Spree::Event::Adapters::ActiveSupportNotifications}
+    # adapter will return a
+    # {ActiveSupport::Notifications::Fanout::Subscribers::Timed} instance
+    # instead.
     #
     # @example Subscribe to the `order_finalized` event
     #   Spree::Event.subscribe 'order_finalized' do |event|
@@ -52,51 +110,78 @@ module Spree
     #   end
     #
     # @see Spree::Event#unsubscribe
-    def subscribe(event_name, &block)
-      name = normalize_name(event_name)
-      listener_names << name
-      adapter.subscribe(name, &block)
+    def subscribe(event_name, adapter: default_adapter, &block)
+      event_name = normalize_name(event_name)
+      adapter.subscribe(event_name, &block).tap do
+        if legacy_adapter(adapter)
+          listener_names << adapter.normalize_name(event_name)
+        end
+      end
     end
 
     # Unsubscribes a whole event or a specific subscription object
     #
-    # @param [String, Object] subscriber the event name as a string (with
-    #  or without the ".spree" suffix) or the subscription object
+    # When unsubscribing from an event, all previous listeners are deactivated.
+    # Still, you can add new subscriptions to the same event and they'll be
+    # called if the event is fired:
+    #
+    # @example
+    #   Spree::Event.subscribe('foo') { do_something }
+    #   Spree::Event.unsubscribe 'foo'
+    #   Spree::Event.subscribe('foo') { do_something_else }
+    #   Spree::Event.fire 'foo' # `do_something_else` will be called, but
+    #   # `do_something` won't
+    #
+    # @param [String, Symbol, Spree::Event::Listener] name_or_subscriber the
+    # event name as a string or the subscription object. Take into account that
+    # if the deprecated {Spree::Event::Adapters::ActiveSupportNotifications}
+    # adapter is used, the subscription object will be a
+    # {ActiveSupport::Notifications::Fanout::Subscribers::Timed} object.
     #
     # @example Unsubscribe a single subscription
-    #   subscription = Spree::Event.fire 'order_finalized'
+    #   subscription = Spree::Event.subscribe('order_finalized') { do_something
+    #   }
     #   Spree::Event.unsubscribe(subscription)
     # @example Unsubscribe all `order_finalized` event subscriptions
     #   Spree::Event.unsubscribe('order_finalized')
-    # @example Unsubscribe an event by name with explicit prefix
-    #   Spree::Event.unsubscribe('order_finalized.spree')
-    def unsubscribe(subscriber)
-      name_or_subscriber = subscriber.is_a?(String) ? normalize_name(subscriber) : subscriber
+    def unsubscribe(name_or_subscriber, adapter: default_adapter)
+      name_or_subscriber = normalize_name(name_or_subscriber)
       adapter.unsubscribe(name_or_subscriber)
     end
 
-    # Lists all subscriptions currently registered under the ".spree"
-    # namespace. Actual implementation is delegated to the adapter
+    # Lists all subscriptions.
     #
-    # @return [Hash] an hash with event names as keys and arrays of subscriptions
-    #  as values
+    # Actual implementation is delegated to the adapter.
+    #
+    # @return [Hash<<String,Regexp>,Spree::Event::Listener>] an hash with
+    # patterns as keys and arrays of subscriptions as values. Take into account
+    # that the deprecated {Spree::Event::Adapters::ActiveSupportNotifications}
+    # adapter will map to
+    # {ActiveSupport::Notifications::Fanout::Subscribers::Timed} instances
+    # instead.
     #
     # @example Current subscriptions
     #  Spree::Event.listeners
-    #    # => {"order_finalized.spree"=> [#<ActiveSupport...>],
-    #      "reimbursement_reimbursed.spree"=> [#<ActiveSupport...>]}
-    def listeners
-      adapter.listeners_for(listener_names)
+    #    # => {"order_finalized"=> [#<Spree::Event::Listener...>],
+    #         "reimbursement_reimbursed"=> [#<Spree::Event::Listener...>]}
+    def listeners(adapter: default_adapter)
+      if legacy_adapter(adapter)
+        adapter.listeners_for(listener_names)
+      else
+        init = Hash.new { |h, k| h[k] = [] }
+        adapter.listeners.each_with_object(init) do |listener, map|
+          map[listener.pattern] << listener
+        end
+      end
     end
 
-    # The adapter used by Spree::Event, defaults to
-    # Spree::Event::Adapters::ActiveSupportNotifications
+    # The default adapter used by Spree::Event.
     #
     # @example Change the adapter
-    #   Spree::Config.events.adapter = "Spree::EventBus.new"
+    #   Spree::Config.events.adapter = "Spree::OtherAdapter.new"
     #
-    # @see Spree::AppConfiguration
-    def adapter
+    # @see Spree::Event::Configuration
+    def default_adapter
       Spree::Config.events.adapter
     end
 
@@ -108,12 +193,21 @@ module Spree
 
     private
 
-    def normalize_name(name)
-     adapter.normalize_name(name)
-    end
-
     def listener_names
       @listeners_names ||= Set.new
+    end
+
+    def normalize_name(name)
+      case name
+      when Symbol
+        name.to_s
+      else
+        name
+      end
+    end
+
+    def legacy_adapter(adapter)
+      adapter == Adapters::ActiveSupportNotifications
     end
   end
 end
