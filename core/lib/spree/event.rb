@@ -65,7 +65,7 @@ module Spree
     # TODO: Change opts to be keyword arguments and include `adapter:` in them
     def fire(event_name, opts = {})
       adapter = opts.delete(:adapter) || default_adapter
-      if block_given? && !legacy_adapter(adapter)
+      if block_given? && !legacy_adapter?(adapter)
         raise ArgumentError, <<~MSG
           Blocks passed to `Spree::Event.fire` are ignored unless the adapter is
           `Spree::Event::Adapters::ActiveSupportNotifications` (which is
@@ -113,7 +113,7 @@ module Spree
     def subscribe(event_name, adapter: default_adapter, &block)
       event_name = normalize_name(event_name)
       adapter.subscribe(event_name, &block).tap do
-        if legacy_adapter(adapter)
+        if legacy_adapter?(adapter)
           listener_names << adapter.normalize_name(event_name)
         end
       end
@@ -165,7 +165,7 @@ module Spree
     #    # => {"order_finalized"=> [#<Spree::Event::Listener...>],
     #         "reimbursement_reimbursed"=> [#<Spree::Event::Listener...>]}
     def listeners(adapter: default_adapter)
-      if legacy_adapter(adapter)
+      if legacy_adapter?(adapter)
         adapter.listeners_for(listener_names)
       else
         init = Hash.new { |h, k| h[k] = [] }
@@ -206,7 +206,7 @@ module Spree
       end
     end
 
-    def legacy_adapter(adapter)
+    def legacy_adapter?(adapter)
       adapter == Adapters::ActiveSupportNotifications
     end
   end
