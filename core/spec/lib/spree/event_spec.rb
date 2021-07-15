@@ -11,8 +11,10 @@ RSpec.describe Spree::Event do
     Spree::Event::Adapters::EventBus.new
   end
 
-  it 'has default adapter' do
-    expect(subject.default_adapter).to eql Spree::Event::Adapters::ActiveSupportNotifications
+  describe '.default_adapter' do
+    it 'returns configured adapter' do
+      expect(subject.default_adapter).to be_an_instance_of Spree::Event::Adapters::EventBus
+    end
   end
 
   describe '.fire' do
@@ -79,7 +81,7 @@ RSpec.describe Spree::Event do
 
       expect(Spree::Deprecation).to receive(:warn).with(/Blocks.*are ignored/)
 
-      subject.fire(:foo) { dummy.toggle }
+      subject.fire(:foo, adapter: Spree::Event::Adapters::ActiveSupportNotifications) { dummy.toggle }
 
       expect(dummy.run).to be(true)
     end
@@ -168,6 +170,8 @@ RSpec.describe Spree::Event do
     let(:notifier) { ActiveSupport::Notifications.notifier }
 
     before do
+      @adapter = Spree::Config.events.adapter
+      Spree::Config.events.adapter = Spree::Event::Adapters::ActiveSupportNotifications
       # ActiveSupport::Notifications does not provide an interface to clean all
       # subscribers at once, so some low level brittle code is required
       if Rails.gem_version >= Gem::Version.new('6.0.0')
@@ -191,6 +195,7 @@ RSpec.describe Spree::Event do
         notifier.instance_variable_set '@subscribers', @old_subscribers
       end
       notifier.instance_variable_set '@listeners_for', @old_listeners
+      Spree::Config.events.adapter = @adapter
     end
 
     describe '#listeners' do

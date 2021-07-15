@@ -34,7 +34,7 @@ module Spree
       private
 
       def deprecate_if_legacy_adapter(adapter)
-        Spree::Deprecation.warn <<~MSG if adapter == Spree::Event::Adapters::ActiveSupportNotifications && !ENV['CI']
+        Spree::Deprecation.warn <<~MSG if adapter == Spree::Event::Adapters::ActiveSupportNotifications
           `Spree::Event::Adapters::ActiveSupportNotifications` adapter is
           deprecated. Please, take your time to update it to an instance of
           `Spree::Event::Adapters::EventBus`. I.e., in your `spree.rb`:
