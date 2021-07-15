@@ -63,27 +63,9 @@ module Spree
     #   end
     #
     # TODO: Change opts to be keyword arguments and include `adapter:` in them
-    def fire(event_name, opts = {})
+    def fire(event_name, opts = {}, &block)
       adapter = opts.delete(:adapter) || default_adapter
-      if block_given? && !legacy_adapter?(adapter)
-        raise ArgumentError, <<~MSG
-          Blocks passed to `Spree::Event.fire` are ignored unless the adapter is
-          `Spree::Event::Adapters::ActiveSupportNotifications` (which is
-          deprecated). Please, instead of:
-
-            Spree::Event.fire 'event_name', order: order do
-              order.do_something
-            end
-
-          Use:
-
-            order.do_something
-            Spree::Event.fire 'event_name', order: order
-
-        MSG
-      elsif block_given?
-        yield opts
-      end
+      handle_block_on_fire(block, opts, adapter) if block_given?
       adapter.fire normalize_name(event_name), opts
     end
 
@@ -203,6 +185,42 @@ module Spree
         name.to_s
       else
         name
+      end
+    end
+
+    def handle_block_on_fire(block, opts, adapter)
+      example = <<~MSG
+        Please, instead of:
+
+          Spree::Event.fire 'event_name', order: order do
+            order.do_something
+          end
+
+        Use:
+
+          order.do_something
+          Spree::Event.fire 'event_name', order: order
+      MSG
+      if legacy_adapter?(adapter)
+        Spree::Deprecation.warn <<~MSG
+          Blocks on `Spree::Event.fire` are ignored in the new adapter
+          `Spree::Event::Adapters::EventBus`, and your current adapter
+          (`Spree::Event::Adapters::ActiveSupportNotifications`) is deprecated.
+          For an easier transition is recommendable to update your code.
+
+          #{example}
+
+        MSG
+        block.call(opts)
+      else
+        raise ArgumentError, <<~MSG
+          Blocks passed to `Spree::Event.fire` are ignored unless the adapter is
+          `Spree::Event::Adapters::ActiveSupportNotifications` (which is
+          deprecated).
+
+          #{example}
+
+        MSG
       end
     end
 

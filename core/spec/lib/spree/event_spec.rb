@@ -63,6 +63,26 @@ RSpec.describe Spree::Event do
         end
       end.to raise_error(ArgumentError, /Blocks.*are ignored/)
     end
+
+    it 'renders a deprecation warning if a block is given and the adapter is ActiveSupportNotifications but still executes it' do
+      dummy = Class.new do
+        attr_reader :run
+
+        def initialize
+          @run = false
+        end
+
+        def toggle
+          @run = true
+        end
+      end.new
+
+      expect(Spree::Deprecation).to receive(:warn).with(/Blocks.*are ignored/)
+
+      subject.fire(:foo) { dummy.toggle }
+
+      expect(dummy.run).to be(true)
+    end
   end
 
   describe '.subscribe' do
