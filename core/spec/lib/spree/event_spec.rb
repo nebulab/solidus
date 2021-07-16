@@ -58,6 +58,14 @@ RSpec.describe Spree::Event do
       expect(dummy.run).to be(true)
     end
 
+    it "passes its caller location as the event's caller location" do
+      bus = build_bus
+
+      event = subject.fire :foo, adapter: bus
+
+      expect(event.caller_location.to_s).to include(__FILE__)
+    end
+
     it 'raises error if a block is given and the adapter is not ActiveSupportNotifications' do
       expect do
         subject.fire :foo, adapter: build_bus do
