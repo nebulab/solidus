@@ -7,7 +7,7 @@ RSpec.describe Spree::Event::Event do
     it "sets its time attribute" do
       event = described_class.new
 
-      expect(event.time).not_to be_nil
+      expect(event.time).to be_a(Time)
     end
 
     it "sets its caller_location from given argument" do
