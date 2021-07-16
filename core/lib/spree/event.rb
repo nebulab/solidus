@@ -62,7 +62,9 @@ module Spree
     #     @order.finalize!
     #   end
     #
-    # TODO: Change opts to be keyword arguments and include `adapter:` in them
+    # TODO: Change signature so that `opts` are keyword arguments, and include
+    # `adapter:` in them. We want to do that on Solidus 4.0. Spree::Deprecation
+    # can't be used because of this: https://github.com/solidusio/solidus/pull/4130#discussion_r668666924
     def fire(event_name, opts = {}, &block)
       adapter = opts.delete(:adapter) || default_adapter
       handle_block_on_fire(block, opts, adapter) if block_given?
