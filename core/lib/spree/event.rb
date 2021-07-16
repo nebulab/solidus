@@ -116,7 +116,7 @@ module Spree
     #   Spree::Event.fire 'foo' # `do_something_else` will be called, but
     #   # `do_something` won't
     #
-    # @param [String, Symbol, Spree::Event::Listener] name_or_subscriber the
+    # @param [String, Symbol, Spree::Event::Listener] subscriber_or_event_name the
     # event name as a string or the subscription object. Take into account that
     # if the deprecated {Spree::Event::Adapters::ActiveSupportNotifications}
     # adapter is used, the subscription object will be a
@@ -128,9 +128,12 @@ module Spree
     #   Spree::Event.unsubscribe(subscription)
     # @example Unsubscribe all `order_finalized` event subscriptions
     #   Spree::Event.unsubscribe('order_finalized')
-    def unsubscribe(name_or_subscriber, adapter: default_adapter)
-      name_or_subscriber = normalize_name(name_or_subscriber)
-      adapter.unsubscribe(name_or_subscriber)
+    def unsubscribe(subscriber_or_event_name, adapter: default_adapter)
+      if subscriber_or_event_name.is_a?(Listener) || subscriber_or_event_name.is_a?(ActiveSupport::Notifications::Fanout::Subscribers::Timed)
+        unsubscribe_listener(subscriber_or_event_name, adapter)
+      else
+        unsubscribe_event(subscriber_or_event_name, adapter)
+      end
     end
 
     # Lists all subscriptions.
@@ -176,6 +179,14 @@ module Spree
     end
 
     private
+
+    def unsubscribe_listener(listener, adapter)
+      adapter.unsubscribe(listener)
+    end
+
+    def unsubscribe_event(event_name, adapter)
+      adapter.unsubscribe(normalize_name(event_name))
+    end
 
     def listener_names
       @listeners_names ||= Set.new
