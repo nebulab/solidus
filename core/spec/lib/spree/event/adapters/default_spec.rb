@@ -99,6 +99,50 @@ module Spree
 
             expect(dummy.box).to eq('foo')
           end
+
+          it 'adds the fired event with given caller location to the firing result object' do
+            bus = described_class.new
+            dummy = Class.new do
+              attr_reader :run
+
+              def initialize
+                @run = false
+              end
+
+              def toggle
+                @run = true
+              end
+            end.new
+            bus.subscribe('foo') { dummy.toggle }
+
+            firing = bus.fire 'foo', caller_location: caller_locations(0)[0]
+
+            expect(firing.event.caller_location.to_s).to include(__FILE__)
+          end
+
+          it 'adds the triggered executions to the firing result object' do
+            bus = described_class.new
+            dummy = Class.new do
+              attr_reader :counter
+
+              def initialize
+                @counter = 0
+              end
+
+              def inc
+                @counter += 1
+              end
+            end.new
+            listener1 = bus.subscribe('foo') { dummy.inc; :done }
+            listener2 = bus.subscribe('foo') { dummy.inc; :done_again }
+
+            firing = bus.fire 'foo'
+
+            executions = firing.executions
+            expect(executions.count).to be(2)
+            expect(executions.map(&:listener)).to match([listener1, listener2])
+            expect(executions.map(&:result)).to match([:done, :done_again])
+          end
         end
 
         describe '#subscribe' do

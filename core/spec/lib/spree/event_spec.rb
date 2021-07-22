@@ -40,11 +40,12 @@ RSpec.describe Spree::Event do
           @run = true
         end
       end.new
-      subject.subscribe('foo', adapter: bus) { dummy.toggle }
+      subject.subscribe('foo', adapter: bus) { dummy.toggle; :done }
 
-      subject.fire 'foo', adapter: bus
+      firing = subject.fire 'foo', adapter: bus
 
       expect(dummy.run).to be(true)
+      expect(firing.executions.first.result).to be(:done)
     end
 
     it 'coerces event names given as symbols' do
@@ -97,6 +98,26 @@ RSpec.describe Spree::Event do
       subject.fire(:foo, adapter: Spree::Event::Adapters::ActiveSupportNotifications) { dummy.toggle }
 
       expect(dummy.run).to be(true)
+    end
+
+    it "provides caller location to the event" do
+      bus = build_bus
+      dummy = Class.new do
+        attr_reader :run
+
+        def initialize
+          @run = false
+        end
+
+        def toggle
+          @run = true
+        end
+      end.new
+      subject.subscribe('foo', adapter: bus) { dummy.toggle }
+
+      firing = subject.fire 'foo', adapter: bus
+
+      expect(firing.event.caller_location.to_s).to include(__FILE__)
     end
   end
 
