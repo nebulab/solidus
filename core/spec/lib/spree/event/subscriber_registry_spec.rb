@@ -1,7 +1,9 @@
 # frozen_string_literal: true
+require 'rails_helper'
 require 'active_support/all'
 require 'spec_helper'
 require 'spree/event'
+require 'spree/event/listener'
 
 RSpec.describe Spree::Event::SubscriberRegistry do
   module N
@@ -110,6 +112,40 @@ RSpec.describe Spree::Event::SubscriberRegistry do
           end
         end
       end
+    end
+  end
+
+  describe '#listeners' do
+    before do
+      subject.register(N)
+      subject.activate_subscriber(N)
+    end
+    after { subject.deactivate_subscriber(N) }
+
+    it 'returns all listeners that the subscriber generates' do
+      listeners = subject.listeners(N)
+
+      expect(listeners.count).to be(2)
+      expect(listeners.first).to be_a(Spree::Event::Listener)
+    end
+
+    it 'can restrict by event names' do
+      listeners = subject.listeners(N, event_names: ['event_name'])
+
+      expect(listeners.count).to be(1)
+      expect(listeners.first.pattern).to eq('event_name')
+
+      listeners = subject.listeners(N, event_names: ['event_name', 'other_event'])
+
+      expect(listeners.count).to be(2)
+      expect(listeners.map(&:pattern)).to match(['event_name', 'other_event'])
+    end
+
+    it 'can event names as symbols' do
+      listeners = subject.listeners(N, event_names: [:event_name])
+
+      expect(listeners.count).to be(1)
+      expect(listeners.first.pattern).to eq('event_name')
     end
   end
 end

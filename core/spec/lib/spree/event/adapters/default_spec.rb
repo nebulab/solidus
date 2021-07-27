@@ -243,6 +243,37 @@ module Spree
             expect(dummy2.run).to be(true)
           end
         end
+
+        describe '#with_listeners' do
+          it 'returns a new instance with given listeners' do
+            bus = described_class.new
+            dummy1, dummy2, dummy3 = Array.new(3) do
+              Class.new do
+                attr_reader :run
+
+                def initialize
+                  @run = false
+                end
+
+                def toggle
+                  @run = true
+                end
+              end.new
+            end
+            listener1 = bus.subscribe('foo') { dummy1.toggle }
+            listener2 = bus.subscribe('foo') { dummy2.toggle }
+            listener3 = bus.subscribe('foo') { dummy3.toggle }
+
+            new_bus = bus.with_listeners([listener1, listener2])
+            new_bus.fire('foo')
+
+            expect(new_bus).not_to eq(bus)
+            expect(new_bus.listeners).to match_array([listener1, listener2])
+            expect(dummy1.run).to be(true)
+            expect(dummy2.run).to be(true)
+            expect(dummy3.run).to be(false)
+          end
+        end
       end
     end
   end

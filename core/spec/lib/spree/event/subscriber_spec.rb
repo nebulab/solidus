@@ -1,16 +1,23 @@
 # frozen_string_literal: true
 
+require 'rails_helper'
 require 'active_support/all'
 require 'spec_helper'
 require 'spree/event'
+require 'spree/event/listener'
 
 RSpec.describe Spree::Event::Subscriber do
   module M
     include Spree::Event::Subscriber
 
     event_action :event_name
+    event_action :for_event_foo, event_name: :foo
 
     def event_name(event)
+      # code that handles the event
+    end
+
+    def for_event_foo(event)
       # code that handles the event
     end
 
@@ -81,6 +88,30 @@ RSpec.describe Spree::Event::Subscriber do
         expect(M).to receive(:other_event)
         Spree::Event.fire 'other_event'
       end
+    end
+  end
+
+  describe '::listeners' do
+    before { M.activate }
+    after { M.deactivate }
+
+    it 'returns all listeners that the subscriber generates when no arguments are given' do
+      listeners = M.listeners
+
+      expect(listeners.count).to be(2)
+      expect(listeners.first).to be_a(Spree::Event::Listener)
+    end
+
+    it 'can restrict by event names given as arguments' do
+      listeners = M.listeners('event_name')
+
+      expect(listeners.count).to be(1)
+      expect(listeners.first.pattern).to eq('event_name')
+
+      listeners = M.listeners('event_name', 'foo')
+
+      expect(listeners.count).to be(2)
+      expect(listeners.map(&:pattern)).to match(['event_name', 'foo'])
     end
   end
 end

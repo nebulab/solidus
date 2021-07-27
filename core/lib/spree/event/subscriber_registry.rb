@@ -50,6 +50,16 @@ module Spree
         end
       end
 
+      def listeners(subscriber, event_names: [])
+        registry[subscriber.name].values.yield_self do |listeners|
+          if event_names.empty?
+            listeners
+          else
+            listeners.select { |listener| event_names.map(&:to_s).include?(listener.pattern) }
+          end
+        end
+      end
+
       private
 
       attr_reader :registry

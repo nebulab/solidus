@@ -81,6 +81,45 @@ module Spree
       def deactivate(event_action_name = nil)
         Spree::Event.subscriber_registry.deactivate_subscriber(self, event_action_name)
       end
+
+      # Returns the generated listeners for the subscriber
+      #
+      # When a {Subscriber} is registered, the corresponding listeners are
+      # automatically generated, i.e., the returning values for
+      # {Spree::Event.subscribe} that encapsulate the logic to be performed.
+      #
+      # The listeners to obtain can be restricted to only certain events by providing
+      # their names:
+      #
+      # @example
+      #
+      #   module EmailSender
+      #     include Spree::Event::Subscriber
+      #
+      #     event_action :order_finalized
+      #     event_action :confirm_reimbursement
+      #
+      #     def order_finalized(event)
+      #       # ...
+      #     end
+      #
+      #     def confirm_reimbursement(event)
+      #       # ...
+      #     end
+      #   end
+      #
+      #   EmailSender.activate
+      #   EmailSender.listeners.count # => 2
+      #   EmailSender.listeners("order_finalized").count # => 1
+      #
+      # @param event_names [Array<String, Symbol>]
+      # @return [Array<Spree::Event::Listener>] Take into account that
+      # {ActiveSupport::Notifications::Fanout::Subscribers::Timed} instances will
+      # be returned if the deprecated
+      # {Spree::Event::Adapters::ActiveSupportNotifications} adapter is used.
+      def listeners(*event_names)
+        Spree::Event.subscriber_registry.listeners(self, event_names: event_names)
+      end
     end
   end
 end

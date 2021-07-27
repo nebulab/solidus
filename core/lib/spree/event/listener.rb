@@ -41,6 +41,11 @@ module Spree
         @exclusions << event_name
       end
 
+      # @api private
+      def listeners
+        [self]
+      end
+
       private
 
       def excludes?(event_name)
