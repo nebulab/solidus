@@ -27,8 +27,8 @@ module Spree
         # @api private
         attr_reader :listeners
 
-        def initialize
-          @listeners = []
+        def initialize(listeners = [])
+          @listeners = listeners
         end
 
         # @api private
@@ -54,6 +54,11 @@ module Spree
           else
             unsubscribe_event(subscriber_or_event_name)
           end
+        end
+
+        # @api private
+        def with_listeners(listeners)
+          self.class.new(listeners)
         end
 
         private
