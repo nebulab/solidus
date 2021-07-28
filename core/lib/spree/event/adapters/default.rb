@@ -61,6 +61,20 @@ module Spree
           self.class.new(listeners)
         end
 
+        # @api private
+        def with_injected_listeners(injections)
+          to_replace = injections.keys
+          mapping, new_listeners = listeners.reduce([{}, []]) do |(mapping, new_listeners), listener|
+            if to_replace.include?(listener)
+              new_listener = listener.with_block(injections[listener])
+              [mapping.merge(listener => new_listener), new_listeners << new_listener]
+            else
+              [mapping, new_listeners + [listener]]
+            end
+          end
+          [self.class.new(new_listeners), mapping]
+        end
+
         private
 
         def listeners_for_event(event_name)

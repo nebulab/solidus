@@ -14,13 +14,13 @@ module Spree
     #   Spree::Event.unsubscribe listener
     class Listener
       # @api private
-      attr_reader :pattern, :block
+      attr_reader :pattern, :block, :exclusions
 
       # @api private
-      def initialize(pattern:, block:)
+      def initialize(pattern:, block:, exclusions: [])
         @pattern = pattern
         @block = block
-        @exclusions = []
+        @exclusions = exclusions
       end
 
       # @api private
@@ -44,6 +44,15 @@ module Spree
       # @api private
       def listeners
         [self]
+      end
+
+      # @api private
+      def with_block(new_block)
+        self.class.new(
+          block: new_block,
+          pattern: pattern,
+          exclusions: exclusions
+        )
       end
 
       private

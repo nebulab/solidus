@@ -274,6 +274,54 @@ module Spree
             expect(dummy3.run).to be(false)
           end
         end
+
+        describe '#with_injected_listeners' do
+          it 'returns as firt element a new instance with injected listeners' do
+            bus = described_class.new
+            dummy1, dummy2, dummy3 = Array.new(3) do
+              Class.new do
+                attr_accessor :field
+              end.new
+            end
+            listener1 = bus.subscribe('foo') { dummy1.field = 'default' }
+            listener2 = bus.subscribe('foo') { dummy2.field = 'default' }
+            listener3 = bus.subscribe('foo') { dummy3.field = 'default' }
+            injection1 = proc { dummy1.field = 'injected' }
+            injection2 = proc { dummy2.field = 'injected' }
+
+            new_bus, _mapping = bus.with_injected_listeners(listener1 => injection1, listener2 => injection2)
+            new_bus.fire('foo')
+
+            expect(new_bus).not_to eq(bus)
+            expect(dummy1.field).to eq('injected')
+            expect(dummy2.field).to eq('injected')
+            expect(dummy3.field).to eq('default')
+          end
+
+          it 'returns as second element the mapping between original listeners and new ones' do
+            bus = described_class.new
+            dummy1, dummy2 = Array.new(2) do
+              Class.new do
+                attr_accessor :field
+              end.new
+            end
+            listener1 = bus.subscribe('foo') { dummy1.field = 'default' }
+            listener2 = bus.subscribe('foo') { dummy2.field = 'default' }
+            injection1 = proc { dummy1.field = 'injected' }
+            injection2 = proc { dummy2.field = 'injected' }
+
+            _new_bus, mapping = bus.with_injected_listeners(listener1 => injection1, listener2 => injection2)
+
+            expect(dummy1.field).to be_nil
+            expect(dummy2.field).to be_nil
+
+            mapping[listener1].call(:event)
+            mapping[listener2].call(:event)
+
+            expect(dummy1.field).to eq('injected')
+            expect(dummy2.field).to eq('injected')
+          end
+        end
       end
     end
   end

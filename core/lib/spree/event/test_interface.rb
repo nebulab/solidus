@@ -46,12 +46,11 @@ module Spree
       # @param listeners_and_subscribers [Spree::Event::Listener,
       # Array<Spree::Event::Listener>, Spree::Event::Subscriber]
       # @yield While the block executes only provided listeners will run
-      def performing_only(*listeners_and_subscribers)
-        old_adapter = default_adapter
+      def performing_only(*listeners_and_subscribers, &block)
         listeners = listeners_and_subscribers.flatten.map(&:listeners)
-        Spree::Config.events.adapter = old_adapter.with_listeners(listeners.flatten)
-        yield
-        Spree::Config.events.adapter = old_adapter
+        adapter = default_adapter.with_listeners(listeners.flatten)
+
+        with_default_adapter(adapter, &block)
       end
 
       # Perform no listeners for the duration of the block
@@ -64,6 +63,50 @@ module Spree
       # @see Spree::Event::TestInterface#performing_only
       def silenced(&block)
         performing_only(&block)
+      end
+
+      # Switches listeners for the duration of the block
+      #
+      # Temporarily inject replacement listeners for the duration of the block.
+      #
+      # @example
+      #   Spree::Event.enable_test_interface
+      #
+      #   listener = Spree::Event.subscribe('foo') { do_something }
+      #   injection = proc { do_something_else }
+      #
+      #   Spree::Event.inject_listeners(listener: injection) do
+      #     Spree::Event.fire('foo') # This will run `injection`
+      #   end
+      #
+      #   Spree::Event.fire('foo') # This will run `listener`
+      #
+      # The instances of {Spree::Event::Listener} generated from the injected
+      # proc are yielded to the block:
+      #
+      # @example
+      #   Spree::Event.inject_listeners(listener: injection) do |mapping|
+      #     Spree::Event.unsubscribe(mapping[listener]) 
+      #
+      #     Spree::Event.fire('foo') # Nothing will be run
+      #   end
+      #
+      #   Spree::Event.fire('foo') # This will run `listener`
+      def inject_listeners(injections, &block)
+        adapter, mapping = default_adapter.with_injected_listeners(injections)
+
+        with_default_adapter(adapter) do
+          block.call(mapping)
+        end
+      end
+
+      private
+
+      def with_default_adapter(adapter)
+        old_adapter = default_adapter
+        Spree::Config.events.adapter = adapter
+        yield
+        Spree::Config.events.adapter = old_adapter
       end
     end
 

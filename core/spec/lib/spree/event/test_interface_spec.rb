@@ -245,4 +245,70 @@ RSpec.describe Spree::Event::TestInterface do
       Spree::Event.unsubscribe(listener)
     end
   end
+
+  describe '#inject_listeners' do
+    before { Spree::Event.enable_test_interface }
+
+    it 'switches listeners for the duration of the block' do
+      dummy1, dummy2, dummy3 = Array.new(3) do
+        Class.new do
+          attr_accessor :field
+        end.new
+      end
+      listener1 = Spree::Event.subscribe('foo') { dummy1.field = 'default' }
+      listener2 = Spree::Event.subscribe('foo') { dummy2.field = 'default' }
+      listener3 = Spree::Event.subscribe('foo') { dummy3.field = 'default' }
+      injection1 = proc { dummy1.field = 'injected' }
+      injection2 = proc { dummy2.field = 'injected' }
+
+      Spree::Event.inject_listeners(listener1 => injection1, listener2 => injection2) do
+        Spree::Event.fire('foo')
+      end
+
+      expect(dummy1.field).to eq('injected')
+      expect(dummy2.field).to eq('injected')
+      expect(dummy3.field).to eq('default')
+    ensure
+      Spree::Event.unsubscribe(listener1)
+      Spree::Event.unsubscribe(listener2)
+      Spree::Event.unsubscribe(listener3)
+    end
+
+    it 'performs again the original listener when the block is over' do
+      dummy = Class.new do
+        attr_accessor :field
+      end.new
+      listener = Spree::Event.subscribe('foo') { dummy.field = 'default' }
+      injection = proc { dummy.field = 'injected' }
+
+      Spree::Event.inject_listeners(listener => injection) do
+        Spree::Event.fire('foo')
+      end
+
+      expect(dummy.field).to eq('injected')
+
+      Spree::Event.fire('foo')
+
+      expect(dummy.field).to eq('default')
+    ensure
+      Spree::Event.unsubscribe(listener)
+    end
+
+    it 'yields the mapping between original listeners and new injected listeners' do
+      dummy = Class.new do
+        attr_accessor :field
+      end.new
+      listener = Spree::Event.subscribe('foo') { dummy.field = 'default' }
+      injection = proc { dummy.field = 'injected' }
+
+      Spree::Event.inject_listeners(listener => injection) do |mapping|
+        Spree::Event.unsubscribe mapping[listener]
+        Spree::Event.fire('foo')
+      end
+
+      expect(dummy.field).to be_nil
+    ensure
+      Spree::Event.unsubscribe(listener)
+    end
+  end
 end

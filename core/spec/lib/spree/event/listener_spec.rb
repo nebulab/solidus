@@ -71,4 +71,38 @@ RSpec.describe Spree::Event::Listener do
       expect(listener.listeners).to eq([listener])
     end
   end
+
+  describe '#with_block' do
+    it 'returns a new instance of a listener' do
+      listener = described_class.new(pattern: 'foo', block: -> {})
+
+      new_listener = listener.with_block(proc {})
+
+      expect(new_listener).not_to eq(listener)
+    end
+
+    it 'preserves pattern' do
+      listener = described_class.new(pattern: 'foo', block: -> {})
+
+      new_listener = listener.with_block(proc {})
+
+      expect(new_listener.pattern).to eq(listener.pattern)
+    end
+
+    it 'preserves exclusions' do
+      listener = described_class.new(pattern: 'foo', block: proc {}, exclusions: 'foo')
+
+      new_listener = listener.with_block(proc {})
+
+      expect(new_listener.exclusions).to eq(listener.exclusions)
+    end
+
+    it 'switches blocks' do
+      listener = described_class.new(pattern: 'foo', block: proc { :old_block }, exclusions: 'foo')
+
+      new_listener = listener.with_block(proc { :new_block })
+
+      expect(new_listener.call(:event)).to eq(:new_block)
+    end
+  end
 end
