@@ -36,6 +36,7 @@ RSpec.describe Spree::Event::TestInterface do
           end
         end.new
       end
+      Spree::Event.register('foo')
       listener1 = Spree::Event.subscribe('foo') { dummy1.toggle }
       listener2 = Spree::Event.subscribe('foo') { dummy2.toggle }
       listener3 = Spree::Event.subscribe('foo') { dummy3.toggle }
@@ -51,6 +52,7 @@ RSpec.describe Spree::Event::TestInterface do
       Spree::Event.unsubscribe(listener1)
       Spree::Event.unsubscribe(listener2)
       Spree::Event.unsubscribe(listener3)
+      Spree::Event.unregister('foo')
     end
 
     it 'performs again all the listeners once the block is done' do
@@ -67,6 +69,7 @@ RSpec.describe Spree::Event::TestInterface do
           end
         end.new
       end
+      Spree::Event.register('foo')
       listener1 = Spree::Event.subscribe('foo') { dummy1.toggle }
       listener2 = Spree::Event.subscribe('foo') { dummy2.toggle }
 
@@ -83,6 +86,7 @@ RSpec.describe Spree::Event::TestInterface do
     ensure
       Spree::Event.unsubscribe(listener1)
       Spree::Event.unsubscribe(listener2)
+      Spree::Event.unregister('foo')
     end
 
     it 'can extract listeners from a subscriber module' do
@@ -99,6 +103,7 @@ RSpec.describe Spree::Event::TestInterface do
           end
         end.new
       end
+      Spree::Event.register('foo')
       Subscriber1 = Module.new do
         include Spree::Event::Subscriber
 
@@ -130,6 +135,7 @@ RSpec.describe Spree::Event::TestInterface do
     ensure
       Spree::Event.subscriber_registry.deactivate_subscriber(Subscriber1)
       Spree::Event.subscriber_registry.deactivate_subscriber(Subscriber2)
+      Spree::Event.unregister('foo')
     end
 
     it 'can mix listeners and array of listeners' do
@@ -146,6 +152,7 @@ RSpec.describe Spree::Event::TestInterface do
           end
         end.new
       end
+      Spree::Event.register('foo')
       listener = Spree::Event.subscribe('foo') { dummy1.toggle }
       Subscriber = Module.new do
         include Spree::Event::Subscriber
@@ -168,6 +175,7 @@ RSpec.describe Spree::Event::TestInterface do
     ensure
       Spree::Event.unsubscribe(listener)
       Spree::Event.subscriber_registry.deactivate_subscriber(Subscriber)
+      Spree::Event.unregister('foo')
     end
 
     it 'can perform no listener at all' do
@@ -182,6 +190,7 @@ RSpec.describe Spree::Event::TestInterface do
           @run = true
         end
       end.new
+      Spree::Event.register('foo')
       listener = Spree::Event.subscribe('foo') { dummy.toggle }
 
       Spree::Event.performing_only do
@@ -191,6 +200,7 @@ RSpec.describe Spree::Event::TestInterface do
       expect(dummy.run).to be(false)
     ensure
       Spree::Event.unsubscribe(listener)
+      Spree::Event.unregister('foo')
     end
 
     it 'can override through an inner call' do
@@ -205,6 +215,7 @@ RSpec.describe Spree::Event::TestInterface do
           @run = true
         end
       end.new
+      Spree::Event.register('foo')
       listener = Spree::Event.subscribe('foo') { dummy.toggle }
 
       Spree::Event.performing_only do
@@ -216,6 +227,7 @@ RSpec.describe Spree::Event::TestInterface do
       expect(dummy.run).to be(true)
     ensure
       Spree::Event.unsubscribe(listener)
+      Spree::Event.unregister('foo')
     end
   end
 
@@ -234,6 +246,7 @@ RSpec.describe Spree::Event::TestInterface do
           @run = true
         end
       end.new
+      Spree::Event.register('foo')
       listener = Spree::Event.subscribe('foo') { dummy.toggle }
 
       Spree::Event.silenced do
@@ -243,6 +256,31 @@ RSpec.describe Spree::Event::TestInterface do
       expect(dummy.run).to be(false)
     ensure
       Spree::Event.unsubscribe(listener)
+      Spree::Event.unregister('foo')
+    end
+  end
+
+  describe '#unregister_event' do
+    before { Spree::Event.enable_test_interface }
+
+    it 'unregisters an event from the registry' do
+      Spree::Event.register('foo')
+
+      Spree::Event.unregister('foo')
+
+      expect {
+        Spree::Event.fire('foo')
+      }.to raise_error(/not registered/)
+    end
+
+    it 'coercers names given as symbol' do
+      Spree::Event.register('foo')
+
+      Spree::Event.unregister(:foo)
+
+      expect {
+        Spree::Event.fire('foo')
+      }.to raise_error(/not registered/)
     end
   end
 end

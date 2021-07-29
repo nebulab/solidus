@@ -21,6 +21,16 @@ RSpec.describe Spree::Event::SubscriberRegistry do
     end
   end
 
+  before do
+    Spree::Event.register(:event_name)
+    Spree::Event.register(:other_event)
+  end
+
+  after do
+    Spree::Event.unregister(:event_name)
+    Spree::Event.unregister(:other_event)
+  end
+
   describe "#activate_all_subscribers" do
     before { subject.register(N) }
 

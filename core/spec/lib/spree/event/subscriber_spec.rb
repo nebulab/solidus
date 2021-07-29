@@ -7,6 +7,16 @@ require 'spree/event'
 require 'spree/event/listener'
 
 RSpec.describe Spree::Event::Subscriber do
+  before do
+    Spree::Event.register(:event_name)
+    Spree::Event.register(:foo)
+  end
+
+  after do
+    Spree::Event.unregister(:event_name)
+    Spree::Event.unregister(:foo)
+  end
+
   module M
     include Spree::Event::Subscriber
 
@@ -69,12 +79,18 @@ RSpec.describe Spree::Event::Subscriber do
 
       it 'does not subscribe the action' do
         expect(M).not_to receive(:other_event)
+        Spree::Event.register('other_event')
+
         Spree::Event.fire 'other_event'
+
+      ensure
+        Spree::Event.unregister('other_event')
       end
     end
 
     context 'when the action is declared' do
       before do
+        Spree::Event.register('other_event')
         M.event_action :other_event
         M.activate
       end
@@ -82,6 +98,7 @@ RSpec.describe Spree::Event::Subscriber do
       after do
         M.deactivate
         M.event_actions.delete(:other_event)
+        Spree::Event.unregister('other_event')
       end
 
       it 'subscribe the action' do

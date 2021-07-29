@@ -3,6 +3,7 @@
 require 'rails_helper'
 require 'spree/event/adapters/default'
 require 'spree/event/adapters/active_support_notifications'
+require 'spree/event/registry'
 
 RSpec.describe Spree::Event do
   subject { described_class }
@@ -14,6 +15,55 @@ RSpec.describe Spree::Event do
   describe '.default_adapter' do
     it 'returns configured adapter' do
       expect(subject.default_adapter).to be_an_instance_of Spree::Event::Adapters::Default
+    end
+  end
+
+  describe '.register' do
+    it 'adds given event name to the registry' do
+      bus = build_bus
+
+      subject.register('foo', adapter: bus)
+
+      expect(subject.registry(adapter: bus).registered?('foo')).to be(true)
+    end
+
+    it 'coerces event names given as symbols' do
+      bus = build_bus
+
+      subject.register(:foo, adapter: bus)
+
+      expect(subject.registry(adapter: bus).registered?('foo')).to be(true)
+    end
+
+    it 'raises with caller location when the event has already been registered' do
+      bus = build_bus
+      subject.register(:foo, adapter: bus)
+
+      expect {
+        subject.register(:foo, adapter: bus)
+      }.to raise_error(/already registered.*#{__FILE__}/m)
+    end
+
+    it 'raises when the adapter is ActiveSupportNotifications' do
+      expect(Spree::Deprecation).to receive(:warn).with(/only on the new adapter/)
+
+      subject.register('foo', adapter: Spree::Event::Adapters::ActiveSupportNotifications)
+    end
+  end
+
+  describe '#registry' do
+    it 'forwards to adapter' do
+      bus = build_bus
+
+      registry = subject.registry(adapter: bus)
+
+      expect(registry).to be_a(Spree::Event::Registry)
+    end
+
+    it 'warns when the adapter is ActiveSupportNotifications' do
+      expect(Spree::Deprecation).to receive(:warn).with(/only on the new adapter/)
+
+      subject.registry(adapter: Spree::Event::Adapters::ActiveSupportNotifications)
     end
   end
 
@@ -31,6 +81,7 @@ RSpec.describe Spree::Event do
           @run = true
         end
       end.new
+      subject.register('foo', adapter: bus)
       subject.subscribe('foo', adapter: bus) { dummy.toggle }
 
       subject.fire 'foo', adapter: bus
@@ -51,6 +102,7 @@ RSpec.describe Spree::Event do
           @run = true
         end
       end.new
+      subject.register('foo', adapter: bus)
       subject.subscribe('foo', adapter: bus) { dummy.toggle }
 
       subject.fire :foo, adapter: bus
@@ -59,6 +111,9 @@ RSpec.describe Spree::Event do
     end
 
     it 'raises error if a block is given and the adapter is not ActiveSupportNotifications' do
+      bus = build_bus
+      subject.register('foo', adapter: bus)
+
       expect do
         subject.fire :foo, adapter: build_bus do
           1 + 1
@@ -85,11 +140,18 @@ RSpec.describe Spree::Event do
 
       expect(dummy.run).to be(true)
     end
+
+    it 'raises error if the event is not registerd' do
+      bus = build_bus
+
+      expect { subject.fire('baz', adapter: bus) }.to raise_error(/'baz' is not registered/m)
+    end
   end
 
   describe '.subscribe' do
     it 'forwards to adapter' do
       bus = build_bus
+      subject.register('foo', adapter: bus)
 
       listener = subject.subscribe('foo', adapter: bus) {}
 
@@ -98,10 +160,17 @@ RSpec.describe Spree::Event do
 
     it 'coerces event names given as symbols' do
       bus = build_bus
+      subject.register('foo', adapter: bus)
 
       listener = subject.subscribe(:foo, adapter: bus) {}
 
       expect(subject.listeners(adapter: bus)['foo'].first).to be(listener)
+    end
+
+    it 'raises error if the event is not registerd' do
+      bus = build_bus
+
+      expect { subject.subscribe('baz', adapter: bus) }.to raise_error(/'baz' is not registered/m)
     end
   end
 
@@ -119,6 +188,7 @@ RSpec.describe Spree::Event do
           @run = true
         end
       end.new
+      subject.register('foo', adapter: bus)
       listener = subject.subscribe('foo', adapter: bus) { dummy.toggle }
 
       subject.unsubscribe listener, adapter: bus
@@ -140,6 +210,7 @@ RSpec.describe Spree::Event do
           @run = true
         end
       end.new
+      subject.register('foo', adapter: bus)
       subject.subscribe('foo', adapter: bus) { dummy.toggle }
 
       subject.unsubscribe :foo, adapter: bus
@@ -147,11 +218,19 @@ RSpec.describe Spree::Event do
 
       expect(dummy.run).to be(false)
     end
+
+    it 'raises error if the event is not registerd' do
+      bus = build_bus
+
+      expect { subject.unsubscribe('baz', adapter: bus) }.to raise_error(/'baz' is not registered/m)
+    end
   end
 
   describe '#listeners' do
     it 'returns mapping of all listeners by event name' do
       bus = build_bus
+      subject.register('foo', adapter: bus)
+      subject.register('bar', adapter: bus)
       listener_foo = subject.subscribe('foo', adapter: bus) {}
       listener_bar = subject.subscribe('bar', adapter: bus) {}
 

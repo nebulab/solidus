@@ -44,6 +44,16 @@ module Spree
         Migrations.new(config, engine_name).check
       end
 
+      # Register core events
+      initializer 'spree.core.register_events' do
+        %w[
+          order_finalized
+          order_recalculated
+          reimbursement_reimbursed
+          reimbursement_errored
+        ].each { |event_name| Spree::Event.register(event_name) }
+      end
+
       # Setup Event Subscribers
       initializer 'spree.core.initialize_subscribers' do |app|
         app.reloader.to_prepare do

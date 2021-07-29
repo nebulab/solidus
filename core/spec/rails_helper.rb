@@ -9,6 +9,8 @@ DummyApp.setup(
   gem_root: File.expand_path('..', __dir__),
   lib_name: 'solidus_core'
 )
+require 'spree/event/test_interface'
+Spree::Event.enable_test_interface
 
 require 'rspec/rails'
 require 'rspec-activemodel-mocks'

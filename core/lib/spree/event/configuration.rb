@@ -49,7 +49,7 @@ module Spree
 
           That will be the new default on Solidus 4.
 
-          Take into account there're two critical changes in behavior in the new adapter:
+          Take into account there're three critical changes in behavior in the new adapter:
 
           - Event names are no longer automatically suffixed with `.spree`, as
           they're no longer in the same bucket that Rails's ones. So, for
@@ -73,6 +73,12 @@ module Spree
 
             order.do_something
             Spree::Event.fire 'event_name', order: order
+
+          - You need to register your custom events before firing or subscribing
+            to them (no need for Solidus' custom ones). Example:
+
+              Spree::Event.register('foo')
+              Spree::Event.fire('foo')
 
         MSG
       end

@@ -7,6 +7,25 @@ module Spree
   module Event
     module Adapters
       RSpec.describe Default do
+        describe '#register' do
+          it 'adds event to the register' do
+            bus = described_class.new
+
+            bus.register('foo')
+
+            expect(bus.registry.registered?('foo')).to be(true)
+          end
+
+          it 'raises when the event is already in the registry' do
+            bus = described_class.new
+            bus.register('foo', caller_location: caller_locations(0)[0])
+
+            expect {
+              bus.register('foo')
+            }.to raise_error(/already registered.*#{__FILE__}/m)
+          end
+        end
+
         describe '#fire' do
           it 'executes listeners subscribed as a string to the event name' do
             bus = described_class.new
@@ -21,6 +40,7 @@ module Spree
                 @run = true
               end
             end.new
+            bus.register('foo')
             bus.subscribe('foo') { dummy.toggle }
 
             bus.fire 'foo'
@@ -41,6 +61,7 @@ module Spree
                 @run = true
               end
             end.new
+            bus.register('foo')
             bus.subscribe(/oo/) { dummy.toggle }
 
             bus.fire 'foo'
@@ -61,7 +82,9 @@ module Spree
                 @run = true
               end
             end.new
+            bus.register('bar')
             bus.subscribe('bar') { dummy.toggle }
+            bus.register('foo')
 
             bus.fire 'foo'
 
@@ -81,7 +104,9 @@ module Spree
                 @run = true
               end
             end.new
+            bus.register('bar')
             bus.subscribe('bar') { dummy.toggle }
+            bus.register('barr')
 
             bus.fire 'barr'
 
@@ -93,17 +118,27 @@ module Spree
             dummy = Class.new do
               attr_accessor :box
             end.new
+            bus.register('foo')
             bus.subscribe('foo') { |event| dummy.box = event.payload[:box] }
 
             bus.fire 'foo', box: 'foo'
 
             expect(dummy.box).to eq('foo')
           end
+
+          it "raises when the fired event hasn't been registered" do
+            bus = described_class.new
+
+            expect {
+              bus.fire('foo')
+            }.to raise_error(/not registered/)
+          end
         end
 
         describe '#subscribe' do
           it 'registers to matching event as string' do
             bus = described_class.new
+            bus.register('foo')
 
             block = ->{}
             bus.subscribe('foo', &block)
@@ -123,9 +158,17 @@ module Spree
           it 'returns a listener object with given block' do
             bus = described_class.new
 
-            listener = bus.subscribe('foo') { 'bar' }
+            listener = bus.subscribe(/foo/) { 'bar' }
 
             expect(listener.block.call).to eq('bar')
+          end
+
+          it "raises when given event name hasn't been registered" do
+            bus = described_class.new
+
+            expect {
+              bus.subscribe('foo')
+            }.to raise_error(/not registered/)
           end
         end
 
@@ -144,6 +187,7 @@ module Spree
                   @run = true
                 end
               end.new
+              bus.register('foo')
               listener = bus.subscribe('foo') { dummy.toggle }
 
               bus.unsubscribe listener
@@ -167,12 +211,21 @@ module Spree
                   @run = true
                 end
               end.new
+              bus.register('foo')
 
               bus.subscribe('foo') { dummy.toggle }
               bus.unsubscribe 'foo'
               bus.fire 'foo'
 
               expect(dummy.run).to be(false)
+            end
+
+            it "raises when given event name hasn't been registered" do
+              bus = described_class.new
+
+              expect {
+                bus.unsubscribe('foo')
+              }.to raise_error(/not registered/)
             end
           end
 
@@ -189,6 +242,7 @@ module Spree
                 @run = true
               end
             end.new
+            bus.register('foo')
             bus.subscribe(/foo/) { dummy.toggle }
             bus.unsubscribe 'foo'
 
@@ -210,6 +264,8 @@ module Spree
                 @run = true
               end
             end.new
+            bus.register('foo')
+            bus.register('bar')
 
             bus.subscribe('foo') { dummy.toggle }
             bus.unsubscribe 'bar'
@@ -233,6 +289,7 @@ module Spree
                 end
               end.new
             end
+            bus.register('foo')
 
             bus.subscribe('foo') { dummy1.toggle }
             bus.unsubscribe 'foo'
@@ -260,6 +317,7 @@ module Spree
                 end
               end.new
             end
+            bus.register('foo')
             listener1 = bus.subscribe('foo') { dummy1.toggle }
             listener2 = bus.subscribe('foo') { dummy2.toggle }
             listener3 = bus.subscribe('foo') { dummy3.toggle }
@@ -272,6 +330,15 @@ module Spree
             expect(dummy1.run).to be(true)
             expect(dummy2.run).to be(true)
             expect(dummy3.run).to be(false)
+          end
+
+          it 'keeps the same registry' do
+            bus = described_class.new
+            bus.register('foo')
+
+            new_bus = bus.with_listeners([])
+
+            expect(new_bus.registry).to be(bus.registry)
           end
         end
       end

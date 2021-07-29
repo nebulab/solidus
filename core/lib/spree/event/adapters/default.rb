@@ -2,6 +2,7 @@
 
 require 'spree/event/event'
 require 'spree/event/listener'
+require 'spree/event/registry'
 
 module Spree
   module Event
@@ -25,14 +26,21 @@ module Spree
       # be the default one.
       class Default
         # @api private
-        attr_reader :listeners
+        attr_reader :listeners, :registry
 
-        def initialize(listeners = [])
+        def initialize(listeners = [], registry = Registry.new)
           @listeners = listeners
+          @registry = registry
+        end
+
+        # @api private
+        def register(event_name, caller_location: caller_locations(1)[0])
+          registry.register(event_name, caller_location: caller_location)
         end
 
         # @api private
         def fire(event_name, opts = {})
+          registry.check_event_name_registered(event_name)
           Event.new(payload: opts).tap do |event|
             listeners_for_event(event_name).each do |listener|
               listener.call(event)
@@ -42,6 +50,7 @@ module Spree
 
         # @api private
         def subscribe(event_name_or_regexp, &block)
+          registry.check_event_name_registered(event_name_or_regexp) if event_name?(event_name_or_regexp)
           Listener.new(pattern: event_name_or_regexp, block: block).tap do |listener|
             @listeners << listener
           end
@@ -52,13 +61,14 @@ module Spree
           if subscriber_or_event_name.is_a?(Listener)
             unsubscribe_listener(subscriber_or_event_name)
           else
+            registry.check_event_name_registered(subscriber_or_event_name) if event_name?(subscriber_or_event_name)
             unsubscribe_event(subscriber_or_event_name)
           end
         end
 
         # @api private
         def with_listeners(listeners)
-          self.class.new(listeners)
+          self.class.new(listeners, registry)
         end
 
         private
@@ -77,6 +87,10 @@ module Spree
           @listeners.each do |listener|
             listener.unsubscribe(event_name)
           end
+        end
+
+        def event_name?(candidate)
+          candidate.is_a?(String)
         end
       end
     end

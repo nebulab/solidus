@@ -65,6 +65,13 @@ module Spree
       def silenced(&block)
         performing_only(&block)
       end
+
+      # Unregisters a previously registered event
+      #
+      # @param [String, Symbol] event_name
+      def unregister(event_name)
+        registry.unregister(normalize_name(event_name))
+      end
     end
 
     # Adds test methods to {Spree::Event}
