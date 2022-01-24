@@ -9,7 +9,6 @@ end
 # from the project root directory.
 ENV["RAILS_ENV"] ||= 'test'
 
-require 'solidus_frontend'
 require 'spree/testing_support/dummy_app'
 DummyApp.setup(
   gem_root: File.expand_path('..', __dir__),
