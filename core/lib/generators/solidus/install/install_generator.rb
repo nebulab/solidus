@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+ # frozen_string_literal: true
 
 require 'rails/generators'
 
@@ -78,16 +78,8 @@ module Solidus
     end
 
     def setup_assets
-      frontend_module_paths = $LOADED_FEATURES.select do |path|
-        begin
-          File.read(path) =~ /module (Spree::)?Frontend/
-        rescue
-          false
-        end
-      end
-
-      puts "DEBUG frontend_module_paths:"
-      frontend_module_paths.each { |path| puts path }
+      puts "DEBUG - #{self.class}#setup_assets - defined?(Spree::Frontend) - #{defined?(Spree::Frontend)}"
+      puts "DEBUG - #{self.class}#setup_assets - Rails.env.test? - #{Rails.env.test?}"
 
       @lib_name = 'spree'
 
