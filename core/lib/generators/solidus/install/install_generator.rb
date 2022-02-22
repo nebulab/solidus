@@ -78,6 +78,17 @@ module Solidus
     end
 
     def setup_assets
+      frontend_module_paths = $LOADED_FEATURES.select do |path|
+        begin
+          File.read(path) =~ /module (Spree::)?Frontend/
+        rescue
+          false
+        end
+      end
+
+      puts "DEBUG frontend_module_paths:"
+      frontend_module_paths.each { |path| puts path }
+
       @lib_name = 'spree'
 
       empty_directory 'app/assets/images'
