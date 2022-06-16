@@ -415,6 +415,95 @@ describe 'Users', type: :feature do
     end
   end
 
+  context 'searching orders', js: true do
+    before do
+      allow_any_instance_of(Spree::OrderInventory).to receive(:add_to_shipment)
+      visit spree.orders_admin_user_path(user_b)
+    end
+
+    let!(:old_order) { create(:completed_order_with_totals, user: user_b) }
+    let!(:new_order) { create(:completed_order_with_totals, user: user_b) }
+
+    context 'by dates' do
+      before do
+        old_order.created_at = 1.year.ago
+        old_order.completed_at = 1.year.ago
+        old_order.save!
+      end
+
+      it 'filters orders based in the selected date range' do
+        fill_in 'q_created_at_gt', with: 1.week.ago
+        # No need to fill out the `q_created_at_lt` field
+        # as it automatically defaults to the current date
+        #
+        # Take into consideration that, given that JS elements
+        # do not dismiss automatically under test environments,
+        # it is complicated to fill out said field without blocking
+        # the "Filter Results" button or without relying on manually
+        # handling the DOM, something which is not recommended since
+        # it may cause fragile and/or flaky specs
+        click_button 'Filter Results'
+
+        within_table 'listing_orders' do
+          expect(page).to have_content(new_order.number)
+          expect(page).not_to have_content(old_order.number)
+        end
+      end
+    end
+
+    context 'by status' do
+      let!(:not_completed) { create(:order_ready_to_complete, user: user_b) }
+
+      it 'filters orders based on their status' do
+        uncheck 'q_completed_at_not_null'
+        select 'Confirm', from: 'q_state_eq'
+        click_button 'Filter Results'
+
+        within_table 'listing_orders' do
+          expect(page).to have_content(not_completed.number)
+          expect(page).not_to have_content(old_order.number)
+          expect(page).not_to have_content(new_order.number)
+        end
+      end
+    end
+
+    context 'by order number' do
+      it 'filters orders based on their order number' do
+        fill_in 'q_number_start', with: new_order.number
+        click_button 'Filter Results'
+
+        within_table 'listing_orders' do
+          expect(page).to have_content(new_order.number)
+          expect(page).not_to have_content(old_order.number)
+        end
+      end
+    end
+
+    context 'by store' do
+      let!(:us_store) { create(:store, name: 'US Store') }
+      let!(:eu_store) { create(:store, name: 'EU Store') }
+
+      before do
+        new_order.update_attributes!(number: "R-#{us_store.id}-6320", store: us_store)
+        old_order.update_attributes!(number: "R-#{eu_store.id}-3477", store: eu_store)
+
+        # For some reason, the dropdown list for stores is not available when the page
+        # first load, hence a reload is necessary in here
+        visit current_path
+      end
+
+      it 'filters orders based on the store they were created' do
+        select eu_store.name, from: 'q_store_id_eq'
+        click_button 'Filter Results'
+
+        within_table 'listing_orders' do
+          expect(page).to have_content(old_order.number)
+          expect(page).not_to have_content(new_order.number)
+        end
+      end
+    end
+  end
+
   context 'items purchased with sorting' do
     before do
       orders
