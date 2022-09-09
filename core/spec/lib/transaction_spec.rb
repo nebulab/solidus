@@ -97,4 +97,23 @@ describe Spree::Transaction do
 
     expect(instance.call(1).result!).to be(4)
   end
+
+  it 'steps can be injected on initialization' do
+    default_one = ->(x) { Spree::Result.success(x + 1) }
+    injected_one = ->(x) { Spree::Result.success(x + 2) }
+    two = ->(x) { Spree::Result.success(x + 2) }
+    registry = {}
+    registry[:one] = default_one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do |input, t|
+        result_one = t[:one, input]
+        t[:two, result_one]
+      end
+    end.new(one: injected_one)
+
+    expect(instance.call(1).result!).to be(5)
+  end
 end

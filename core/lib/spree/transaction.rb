@@ -13,12 +13,16 @@ module Spree
         def included(klass)
           klass.extend(ClassMethods)
           class_exec(registry) do |registry|
-            klass.define_method(:call) do |input|
-              catch(:halt) do
-                transaction = klass.instance_variable_get(:@block)
-                final_result = transaction.call(input, Execution.new(registry: registry))
-                Spree::Result.success(final_result)
-              end
+            klass.define_method(:initialize) do |**kwargs|
+              @registry = registry.merge(kwargs)
+            end
+          end
+
+          klass.define_method(:call) do |input|
+            catch(:halt) do
+              transaction = klass.instance_variable_get(:@block)
+              final_result = transaction.call(input, Execution.new(registry: @registry))
+              Spree::Result.success(final_result)
             end
           end
         end
