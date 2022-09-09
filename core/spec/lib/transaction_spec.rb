@@ -39,7 +39,7 @@ describe Spree::Transaction do
       end
     end.new
 
-    expect(instance.call(1).failure!).to be(:stop)
+    expect(instance.call(1).error!).to be(:stop)
   end
 
   it 'can work on intermediate results' do
@@ -73,6 +73,6 @@ describe Spree::Transaction do
       end
     end.new
 
-    expect { instance.call(1).failure! }.not_to raise_error
+    expect { instance.call(1).error! }.not_to raise_error
   end
 end

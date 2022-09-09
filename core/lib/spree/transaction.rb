@@ -51,36 +51,63 @@ module Spree
 
   class Result
     def self.success(result)
-      new(result: result)
+      Success.new(result: result)
     end
 
     def self.failure(error)
-      new(error: error)
+      Failure.new(error: error)
     end
 
-    def initialize(result: nil, error: nil)
-      @result = result
-      @error = error
+    class Success < Result
+      def initialize(result: nil)
+        @result = result
+      end
+
+      def result!
+        @result
+      end
+
+      def error!
+        raise
+      end
+
+      def success?
+        true
+      end
+
+      def failure?
+        false
+      end
+
+      def bind(&block)
+        block.call(result!)
+      end
     end
 
-    def result!
-      @result || raise
-    end
+    class Failure < Result
+      def initialize(error: nil)
+        @error = error
+      end
 
-    def failure!
-      @error || raise
-    end
+      def result!
+        raise
+      end
 
-    def success?
-      !@result.nil?
-    end
+      def error!
+        @error
+      end
 
-    def failure?
-      !@error.nil?
-    end
+      def success?
+        false
+      end
 
-    def bind(&block)
-      failure? ? self : block.call(result!)
+      def failure?
+        true
+      end
+
+      def bind(&block)
+        self
+      end
     end
   end
 end
