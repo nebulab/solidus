@@ -39,7 +39,7 @@ module Spree
       end
 
       def [](step, input)
-        result = Result.success(input).bind(&registry[step])
+        result = Result.success(input).bind(&registry[step].method(:call))
         if result.failure?
           throw :halt, result
         else
