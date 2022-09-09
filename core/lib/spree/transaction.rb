@@ -15,9 +15,7 @@ module Spree
           class_exec(registry) do |registry|
             klass.define_method(:call) do |input|
               transaction = klass.instance_variable_get(:@block)
-              Spree::Result.success(
-                transaction.call(input, Execution.new(registry: registry))
-              )
+              transaction.call(Spree::Result.success(input), Execution.new(registry: registry))
             end
           end
         end
@@ -38,7 +36,7 @@ module Spree
       end
 
       def [](step, input)
-        registry[step].call(input).result!
+        input.bind(&registry[step])
       end
     end
   end
@@ -48,12 +46,33 @@ module Spree
       new(result: result)
     end
 
-    def initialize(result:)
+    def self.failure(error)
+      new(error: error)
+    end
+
+    def initialize(result: nil, error: nil)
       @result = result
+      @error = error
     end
 
     def result!
       @result || raise
+    end
+
+    def failure!
+      @error || raise
+    end
+
+    def success?
+      !@result.nil?
+    end
+
+    def failure?
+      !@error.nil?
+    end
+
+    def bind(&block)
+      failure? ? self : block.call(result!)
     end
   end
 end
