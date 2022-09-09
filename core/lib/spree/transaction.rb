@@ -14,8 +14,11 @@ module Spree
           klass.extend(ClassMethods)
           class_exec(registry) do |registry|
             klass.define_method(:call) do |input|
-              transaction = klass.instance_variable_get(:@block)
-              transaction.call(Spree::Result.success(input), Execution.new(registry: registry))
+              catch(:halt) do
+                transaction = klass.instance_variable_get(:@block)
+                final_result = transaction.call(input, Execution.new(registry: registry))
+                Spree::Result.success(final_result)
+              end
             end
           end
         end
@@ -36,7 +39,12 @@ module Spree
       end
 
       def [](step, input)
-        input.bind(&registry[step])
+        result = Result.success(input).bind(&registry[step])
+        if result.failure?
+          throw :halt, result
+        else
+          result.result!
+        end
       end
     end
   end
