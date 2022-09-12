@@ -42,8 +42,8 @@ module Spree
         @registry = registry
       end
 
-      def [](step, input)
-        result = Result.success(input).bind(&registry[step].method(:call))
+      def [](step, *input)
+        result = registry[step].call(*input)
         if result.failure?
           throw :halt, result
         else

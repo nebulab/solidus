@@ -116,4 +116,25 @@ describe Spree::Transaction do
 
     expect(instance.call(1).result!).to be(5)
   end
+
+  it 'can pass addional arguments to steps' do
+    one = ->(x) { Spree::Result.success(x + 1) }
+    two = ->(x) { Spree::Result.success(x + 2) }
+    three = ->(x, y) { Spree::Result.success(x + y + 3) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    registry[:three] = three
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do |input|
+        result_one = one(input)
+        result_two = two(result_one)
+        three(result_one, result_two)
+      end
+    end.new
+
+    expect(instance.call(1).result!).to be(9)
+  end
 end
