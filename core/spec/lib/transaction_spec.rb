@@ -192,6 +192,42 @@ describe Spree::Transaction do
     expect(instance.call(x: 1).result!).to be(4)
   end
 
+  it 'accepts steps taking no output' do
+    one = ->(x) { Spree::Result.success(x + 1) }
+    two = -> { Spree::Result.success(3) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do
+        result_one = one(1)
+        two()
+      end
+    end.new
+
+    expect(instance.call(1).result!).to be(3)
+  end
+
+  it 'accepts transactions taking no output' do
+    one = -> { Spree::Result.success(1) }
+    two = ->(x) { Spree::Result.success(x + 1) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do
+        result_one = one()
+        two(result_one)
+      end
+    end.new
+
+    expect(instance.call.result!).to be(2)
+  end
+
   it 'coerces step outputs to result' do
     one = lambda do |input|
       Class.new do
