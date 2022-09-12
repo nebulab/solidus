@@ -42,8 +42,8 @@ module Spree
         @registry = registry
       end
 
-      def [](step, *input)
-        result = registry[step].call(*input)
+      def [](step, *args, **kwargs)
+        result = registry[step].call(*args, **kwargs)
         if result.failure?
           throw :halt, result
         else
@@ -51,8 +51,8 @@ module Spree
         end
       end
 
-      def method_missing(step, *input)
-        registry.key?(step) ? self[step, *input] : super
+      def method_missing(step, *args, **kwargs)
+        registry.key?(step) ? self[step, *args, **kwargs] : super
       end
 
       def respond_to_missing?(step, include_all)

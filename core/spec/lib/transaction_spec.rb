@@ -117,7 +117,7 @@ describe Spree::Transaction do
     expect(instance.call(1).result!).to be(5)
   end
 
-  it 'can pass addional arguments to steps' do
+  it 'can pass addional positional arguments to steps' do
     one = ->(x) { Spree::Result.success(x + 1) }
     two = ->(x) { Spree::Result.success(x + 2) }
     three = ->(x, y) { Spree::Result.success(x + y + 3) }
@@ -136,5 +136,23 @@ describe Spree::Transaction do
     end.new
 
     expect(instance.call(1).result!).to be(9)
+  end
+
+  it 'can pass keyword arguments to steps' do
+    one = ->(x:) { Spree::Result.success(x + 1) }
+    two = ->(x:) { Spree::Result.success(x + 2) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do |input|
+        result_one = one(x: input)
+        two(x: result_one)
+      end
+    end.new
+
+    expect(instance.call(1).result!).to be(4)
   end
 end
