@@ -255,4 +255,22 @@ describe Spree::Transaction do
 
     expect(instance.call(1).result!).to be(3)
   end
+
+  it 'can call a step without unwrapping' do
+    one = ->() { "1" }
+    two = ->(x) { Spree::Result.success(x + 2) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do |input|
+        result_one = raw { one() }.to_i
+        two(result_one)
+      end
+    end.new
+
+    expect(instance.call.result!).to be(3)
+  end
 end

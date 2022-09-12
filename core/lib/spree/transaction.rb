@@ -4,15 +4,13 @@ module Spree
   class Transaction
     def self.[](registry:)
       Class.new(Module) do
-        attr_reader :registry
-
         def initialize(registry:)
           @registry = registry
         end
 
         def included(klass)
           klass.extend(ClassMethods)
-          class_exec(registry) do |registry|
+          class_exec(@registry) do |registry|
             klass.define_method(:initialize) do |**kwargs|
               @registry = registry.merge(kwargs)
             end
@@ -36,14 +34,16 @@ module Spree
     end
 
     class Execution
-      attr_reader :registry
-
       def initialize(registry:)
         @registry = registry
+        @raw = false
       end
 
       def [](name, *args, **kwargs)
-        result = registry[name].call(*args, **kwargs).to_result
+        result = @registry[name].call(*args, **kwargs)
+        return result if @raw
+
+        result = result.to_result
         if result.failure?
           throw :halt, result
         else
@@ -51,12 +51,19 @@ module Spree
         end
       end
 
+      def raw
+        @raw = true
+        yield
+      ensure
+        @raw = false
+      end
+
       def method_missing(name, *args, **kwargs)
-        registry.key?(name) ? self[name, *args, **kwargs] : super
+        @registry.key?(name) ? self[name, *args, **kwargs] : super
       end
 
       def respond_to_missing?(name, include_all)
-        registry.key?(name) || super
+        @registry.key?(name) || super
       end
     end
   end
