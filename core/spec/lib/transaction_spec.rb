@@ -76,7 +76,7 @@ describe Spree::Transaction do
     expect { instance.call(1).error! }.not_to raise_error
   end
 
-  it 'steps can be anything responding to call' do
+  it 'accepts anything responding to call as steps' do
     one = Class.new do
       def call(input)
         Spree::Result.success(input + 1)
@@ -98,7 +98,7 @@ describe Spree::Transaction do
     expect(instance.call(1).result!).to be(4)
   end
 
-  it 'steps can be injected on initialization' do
+  it 'can inject steps on initialization' do
     default_one = ->(x) { Spree::Result.success(x + 1) }
     injected_one = ->(x) { Spree::Result.success(x + 2) }
     two = ->(x) { Spree::Result.success(x + 2) }
