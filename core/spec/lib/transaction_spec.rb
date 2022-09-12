@@ -155,4 +155,68 @@ describe Spree::Transaction do
 
     expect(instance.call(1).result!).to be(4)
   end
+
+  it 'can pass addional positional arguments to the transaction' do
+    one = ->(x) { Spree::Result.success(x + 1) }
+    two = ->(x) { Spree::Result.success(x + 2) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do |x, z|
+        result_one = one(x + z)
+        two(result_one)
+      end
+    end.new
+
+    expect(instance.call(1, 1).result!).to be(5)
+  end
+
+  it 'can pass keyword arguments to the transaction' do
+    one = ->(x) { Spree::Result.success(x + 1) }
+    two = ->(x) { Spree::Result.success(x + 2) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do |x:|
+        result_one = one(x)
+        two(result_one)
+      end
+    end.new
+
+    expect(instance.call(x: 1).result!).to be(4)
+  end
+
+  it 'coerces step outputs to result' do
+    one = lambda do |input|
+      Class.new do
+        def initialize(value)
+          @value = value
+        end
+
+        def to_result
+          Spree::Result.success(@value)
+        end
+      end.new(input)
+    end
+    two = ->(x) { Spree::Result.success(x + 2) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+    instance = Class.new do
+      include Spree::Transaction[registry: registry]
+
+      transaction do |input|
+        result_one = one(1)
+        two(result_one)
+      end
+    end.new
+
+    expect(instance.call(1).result!).to be(3)
+  end
 end

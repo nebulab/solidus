@@ -18,10 +18,10 @@ module Spree
             end
           end
 
-          klass.define_method(:call) do |input|
+          klass.define_method(:call) do |*args, **kwargs|
             catch(:halt) do
               transaction = klass.instance_variable_get(:@block)
-              final_result = Execution.new(registry: @registry).instance_exec(input, &transaction)
+              final_result = Execution.new(registry: @registry).instance_exec(*args, **kwargs, &transaction)
               Spree::Result.success(final_result)
             end
           end
@@ -43,7 +43,7 @@ module Spree
       end
 
       def [](step, *args, **kwargs)
-        result = registry[step].call(*args, **kwargs)
+        result = registry[step].call(*args, **kwargs).to_result
         if result.failure?
           throw :halt, result
         else
@@ -68,6 +68,10 @@ module Spree
 
     def self.failure(error)
       Failure.new(error: error)
+    end
+
+    def to_result
+      self
     end
 
     class Success < Result
