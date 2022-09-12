@@ -12,9 +12,9 @@ describe Spree::Transaction do
     instance = Class.new do
       include Spree::Transaction[registry: registry]
 
-      transaction do |input, t|
-        result_one = t[:one, input]
-        t[:two, result_one]
+      transaction do |input|
+        result_one = one(input)
+        two(result_one)
       end
     end.new
 
@@ -32,9 +32,9 @@ describe Spree::Transaction do
     instance = Class.new do
       include Spree::Transaction[registry: registry]
 
-      transaction do |input, t|
-        result_one = t[:one, input]
-        result_two = t[:two, input]
+      transaction do |input|
+        result_one = one(input)
+        result_two = two(input)
         t[:three, result_two]
       end
     end.new
@@ -51,9 +51,9 @@ describe Spree::Transaction do
     instance = Class.new do
       include Spree::Transaction[registry: registry]
 
-      transaction do |input, t|
-        result_one = t[:one, input]
-        t[:two, result_one + 1]
+      transaction do |input|
+        result_one = one(input)
+        two(result_one + 1)
       end
     end.new
 
@@ -67,8 +67,8 @@ describe Spree::Transaction do
     instance = Class.new do
       include Spree::Transaction[registry: registry]
 
-      transaction do |input, t|
-        t[:one, input]
+      transaction do |input|
+        one(input)
         raise "It doesn't pop up"
       end
     end.new
@@ -89,9 +89,9 @@ describe Spree::Transaction do
     instance = Class.new do
       include Spree::Transaction[registry: registry]
 
-      transaction do |input, t|
-        result_one = t[:one, input]
-        t[:two, result_one]
+      transaction do |input|
+        result_one = one(input)
+        two(result_one)
       end
     end.new
 
@@ -108,9 +108,9 @@ describe Spree::Transaction do
     instance = Class.new do
       include Spree::Transaction[registry: registry]
 
-      transaction do |input, t|
-        result_one = t[:one, input]
-        t[:two, result_one]
+      transaction do |input|
+        result_one = one(input)
+        two(result_one)
       end
     end.new(one: injected_one)
 

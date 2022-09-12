@@ -21,7 +21,7 @@ module Spree
           klass.define_method(:call) do |input|
             catch(:halt) do
               transaction = klass.instance_variable_get(:@block)
-              final_result = transaction.call(input, Execution.new(registry: @registry))
+              final_result = Execution.new(registry: @registry).instance_exec(input, &transaction)
               Spree::Result.success(final_result)
             end
           end
@@ -49,6 +49,14 @@ module Spree
         else
           result.result!
         end
+      end
+
+      def method_missing(step, *input)
+        registry.key?(step) ? self[step, *input] : super
+      end
+
+      def respond_to_missing?(step, include_all)
+        registry.key?(step) || super
       end
     end
   end
