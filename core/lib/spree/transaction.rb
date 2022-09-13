@@ -12,7 +12,7 @@ module Spree
           klass.extend(ClassMethods)
           class_exec(@registry) do |registry|
             klass.define_method(:initialize) do |**kwargs|
-              @registry = registry.merge(kwargs)
+              @registry = registry.merge(**kwargs)
             end
           end
 
