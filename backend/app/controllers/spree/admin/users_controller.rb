@@ -22,33 +22,43 @@ module Spree
 
       def create
         @user = Spree.user_class.new(user_params)
-        if @user.save
-          set_roles
-          set_stock_locations
+        result = services[:save_user].call(
+          @user,
+          user_params,
+          ability: current_ability,
+          role_ids: params[:user][:spree_role_ids],
+          stock_location_ids: params[:user][:stock_location_ids]
+        )
 
+        if result.success?
           flash[:success] = t('spree.created_successfully')
           redirect_to edit_admin_user_url(@user)
         else
           load_roles
           load_stock_locations
 
-          flash.now[:error] = @user.errors.full_messages.join(", ")
+          flash.now[:error] = result.failure!.full_messages.join(", ")
           render :new, status: :unprocessable_entity
         end
       end
 
       def update
-        if @user.update(user_params)
-          set_roles
-          set_stock_locations
+        result = services[:save_user].call(
+          @user,
+          user_params,
+          ability: current_ability,
+          role_ids: params[:user][:spree_role_ids],
+          stock_location_ids: params[:user][:stock_location_ids]
+        )
 
+        if result.success?
           flash[:success] = t('spree.account_updated')
           redirect_to edit_admin_user_url(@user)
         else
           load_roles
           load_stock_locations
 
-          flash.now[:error] = @user.errors.full_messages.join(", ")
+          flash.now[:error] = result.failure!.full_messages.join(", ")
           render :edit, status: :unprocessable_entity
         end
       end
@@ -135,23 +145,6 @@ module Spree
 
       def load_stock_locations
         @stock_locations = Spree::StockLocation.accessible_by(current_ability)
-      end
-
-      def set_roles
-        roles_ids = params[:user][:spree_role_ids]
-        return unless roles_ids
-
-        @user.update_spree_roles(
-          Spree::Role.where(id: roles_ids),
-          ability: current_ability
-        )
-      end
-
-      def set_stock_locations
-        if user_params[:stock_location_ids]
-          @user.stock_locations =
-            Spree::StockLocation.accessible_by(current_ability).where(id: user_params[:stock_location_ids])
-        end
       end
     end
   end

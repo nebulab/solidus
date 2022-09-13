@@ -1,8 +1,14 @@
 # frozen_string_literal: true
 
+require "spree/operation_registry"
+
 module Spree
-  class Transaction
-    def self.[](registry:)
+  module Transaction
+    def self.included(klass)
+      klass.include(self[])
+    end
+
+    def self.[](registry: Spree::OperationRegistry.new)
       Class.new(Module) do
         def initialize(registry:)
           @registry = registry
