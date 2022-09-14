@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spree/service_registry'
+require 'spree/registry'
 
 module Spree
   module Core

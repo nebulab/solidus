@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module Spree
-  class OperationRegistry
-    def initialize(overrides = {})
-      @const_resolver = ->(key) { "Spree::Operations::#{key.to_s.camelize}".constantize }
+  class Registry
+    def initialize(namespace, overrides = {})
+      @const_resolver = ->(key) { "#{namespace}::#{key.to_s.camelize}".constantize }
       @defaults = Hash.new do |_hash, key|
         @const_resolver.call(key).new
       end
@@ -23,4 +23,7 @@ module Spree
       self
     end
   end
+
+  ServiceRegistry = Registry.new('Spree', {})
+  OperationRegistry = Registry.new('Spree::Operations', {})
 end

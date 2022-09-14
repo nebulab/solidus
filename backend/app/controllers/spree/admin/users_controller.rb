@@ -37,7 +37,7 @@ module Spree
           load_roles
           load_stock_locations
 
-          flash.now[:error] = result.failure!.full_messages.join(", ")
+          flash.now[:error] = result.error!.full_messages.join(", ")
           render :new, status: :unprocessable_entity
         end
       end
@@ -58,7 +58,7 @@ module Spree
           load_roles
           load_stock_locations
 
-          flash.now[:error] = result.failure!.full_messages.join(", ")
+          flash.now[:error] = result.error!.full_messages.join(", ")
           render :edit, status: :unprocessable_entity
         end
       end

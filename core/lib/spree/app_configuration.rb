@@ -22,10 +22,15 @@ require "spree/core/search/variant"
 require 'spree/preferences/configuration'
 require 'spree/core/environment'
 require 'spree/rails_compatibility'
+require 'spree/registry'
 
 module Spree
   class AppConfiguration < Preferences::Configuration
     # Preferences (alphabetized to more easily lookup particular preferences)
+
+    preference :service_registry, :registry, default: Spree::ServiceRegistry
+
+    preference :operation_registry, :registry, default: Spree::OperationRegistry
 
     # @!attribute [rw] address_requires_phone
     #   @return [Boolean] should phone number be required (default: +true+)
