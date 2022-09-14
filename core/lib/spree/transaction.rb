@@ -8,34 +8,46 @@ module Spree
       klass.include(self[])
     end
 
-    def self.[](registry: Spree::OperationRegistry.new)
+    def self.[](registry: Spree::OperationRegistry.new, db: true)
       Class.new(Module) do
-        def initialize(registry:)
+        def initialize(registry:, db:)
           @registry = registry
+          @db = db
         end
 
         def included(klass)
           klass.extend(ClassMethods)
-          class_exec(@registry) do |registry|
+          class_exec(@registry, @db) do |registry, db|
             klass.define_method(:initialize) do |**kwargs|
               @registry = registry.merge(**kwargs)
+              @db = db
             end
           end
 
           klass.define_method(:call) do |*args, **kwargs|
-            catch(:halt) do
-              transaction = klass.instance_variable_get(:@block)
-              final_result = Execution.new(registry: @registry).instance_exec(*args, **kwargs, &transaction)
-              Spree::Result.success(final_result)
+            result = nil
+
+            (@db ? ActiveRecord::Base.method(:transaction) : method(:yield_self)).call do
+              catch(:halt) do
+                transaction = klass.instance_variable_get(:@block)
+                unwrapped_result = Execution.new(registry: @registry).instance_exec(*args, **kwargs, &transaction)
+                Spree::Result.success(unwrapped_result)
+              end.tap do |wrapped_result|
+                result = wrapped_result
+                raise ActiveRecord::Rollback if result.failure? && @db
+              end
             end
+
+            result
           end
         end
-      end.new(registry: registry)
+      end.new(registry: registry, db: db)
     end
 
     module ClassMethods
-      def transaction(&block)
+      def transaction(db: true, &block)
         @block = block
+        @db = db
       end
     end
 

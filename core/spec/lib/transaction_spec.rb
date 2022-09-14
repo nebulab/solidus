@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 require 'spree/transaction'
+require 'rails_helper'
 
-describe Spree::Transaction do
+RSpec.describe Spree::Transaction do
   it 'chains steps' do
     one = ->(x) { Spree::Result.success(x + 1) }
     two = ->(x) { Spree::Result.success(x + 2) }
@@ -10,7 +11,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(input)
@@ -30,7 +31,7 @@ describe Spree::Transaction do
     registry[:two] = two
     registry[:three] = three
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(input)
@@ -49,7 +50,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(input)
@@ -65,7 +66,7 @@ describe Spree::Transaction do
     registry = {}
     registry[:one] = one
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         one(input)
@@ -87,7 +88,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(input)
@@ -106,7 +107,7 @@ describe Spree::Transaction do
     registry[:one] = default_one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(input)
@@ -126,7 +127,7 @@ describe Spree::Transaction do
     registry[:two] = two
     registry[:three] = three
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(input)
@@ -145,7 +146,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(x: input)
@@ -163,7 +164,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |x, z|
         result_one = one(x + z)
@@ -181,7 +182,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |x:|
         result_one = one(x)
@@ -199,7 +200,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do
         result_one = one(1)
@@ -217,7 +218,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do
         result_one = one()
@@ -245,7 +246,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = one(1)
@@ -263,7 +264,7 @@ describe Spree::Transaction do
     registry[:one] = one
     registry[:two] = two
     instance = Class.new do
-      include Spree::Transaction[registry: registry]
+      include Spree::Transaction[registry: registry, db: false]
 
       transaction do |input|
         result_one = raw { one() }.to_i
@@ -272,5 +273,43 @@ describe Spree::Transaction do
     end.new
 
     expect(instance.call.result!).to be(3)
+  end
+
+  it "aborts a database transaction when therea's a failure" do
+    one = ->() { Spree::Result.success(create(:product)) }
+    two = ->() { Spree::Result.failure(:error) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+
+    instance = Class.new do
+      include Spree::Transaction[registry: registry, db: true]
+
+      transaction do |input|
+        one()
+        two()
+      end
+    end.new
+
+    expect { instance.call }.not_to change { Spree::Product.count }
+  end
+
+  it "returns last failure when wrapped in a database transaction" do
+    one = ->() { Spree::Result.success(create(:product)) }
+    two = ->() { Spree::Result.failure(:error) }
+    registry = {}
+    registry[:one] = one
+    registry[:two] = two
+
+    instance = Class.new do
+      include Spree::Transaction[registry: registry, db: true]
+
+      transaction do |input|
+        one()
+        two()
+      end
+    end.new
+
+    expect(instance.call.error!).to be(:error)
   end
 end
