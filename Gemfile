@@ -69,3 +69,5 @@ gem 'yard', require: false, group: :docs
 
 custom_gemfile = File.expand_path('Gemfile-custom', __dir__)
 eval File.read(custom_gemfile), nil, custom_gemfile, 0 if File.exist?(custom_gemfile)
+
+gem 'kwork', github: 'nebulab/kwork', branch: :main
