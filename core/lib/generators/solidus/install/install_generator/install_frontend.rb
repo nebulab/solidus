@@ -52,7 +52,8 @@ module Solidus
 
       def install_solidus_starter_frontend
         @bundler_context.remove(['solidus_frontend']) if @bundler_context.component_in_gemfile?(:frontend)
-        @generator_context.apply "https://raw.githubusercontent.com/solidusio/solidus_starter_frontend/21895a99/template.rb"
+        @generator_context.apply "https://raw.githubusercontent.com/solidusio/solidus_starter_frontend/v3.2--gsmendoza/sol-556-investigate-why-solidus-didnt-catch/template.rb"
+
       end
     end
   end
