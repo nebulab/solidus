@@ -182,25 +182,25 @@ jobs:
           command: "sudo apt-get update"
       - libvips
 
-      - install_solidus: { flags: "--sample=false --frontend=none --with-authentication=false" }
-      - test_page: { expected_text: "<title>Ruby on Rails" }
+      # - install_solidus: { flags: "--sample=false --frontend=none --with-authentication=false" }
+      # - test_page: { expected_text: "<title>Ruby on Rails" }
 
-      - install_solidus: { flags: "--sample=false --frontend=solidus_frontend --with-authentication" }
-      - test_page: { expected_text: "data-hook=" }
+      # - install_solidus: { flags: "--sample=false --frontend=solidus_frontend --with-authentication" }
+      # - test_page: { expected_text: "data-hook=" }
 
       - install_solidus: { flags: "--sample=false --frontend=solidus_starter_frontend --with-authentication" }
       - test_page: { expected_text: "The only eCommerce platform you’ll ever need." }
 
-      - run:
-          name: "Test `rake task: extensions:test_app`"
-          command: |
-            mkdir -p /tmp/dummy_extension
-            cd /tmp/dummy_extension
-            bundle init
-            bundle add rails sqlite3 --skip-install
-            bundle add solidus --git "file://$(ruby -e"puts File.expand_path ENV['CIRCLE_WORKING_DIRECTORY']")"
-            export LIB_NAME=set # dummy requireable file
-            bundle exec rake -rrails -rspree/testing_support/extension_rake -e'Rake::Task["extension:test_app"].invoke'
+      # - run:
+      #     name: "Test `rake task: extensions:test_app`"
+      #     command: |
+      #       mkdir -p /tmp/dummy_extension
+      #       cd /tmp/dummy_extension
+      #       bundle init
+      #       bundle add rails sqlite3 --skip-install
+      #       bundle add solidus --git "file://$(ruby -e"puts File.expand_path ENV['CIRCLE_WORKING_DIRECTORY']")"
+      #       export LIB_NAME=set # dummy requireable file
+      #       bundle exec rake -rrails -rspree/testing_support/extension_rake -e'Rake::Task["extension:test_app"].invoke'
 
   test_solidus:
     parameters:
@@ -248,17 +248,17 @@ workflows:
     jobs:
       - solidus_installer
 
-      # Based on supported versions for the current Solidus release and recommended versions from
-      # https://www.fastruby.io/blog/ruby/rails/versions/compatibility-table.html.
-      - test_solidus:
-          name: &name "test-rails-<<matrix.rails>>-ruby-<<matrix.ruby>>-<<matrix.database>>-<<#matrix.paperclip>>paperclip<</matrix.paperclip>><<^matrix.paperclip>>activestorage<</matrix.paperclip>>"
-          matrix: { parameters: { rails: ['7.0'], ruby: ['3.0', '3.1'], database: ['mysql', 'sqlite', 'postgres'], paperclip: [true, false] } }
-      - test_solidus:
-          name: *name
-          matrix: { parameters: { rails: ['6.1'], ruby: ['2.7', '3.0'], database: ['sqlite'], paperclip: [false] } }
-      - test_solidus:
-          name: *name
-          matrix: { parameters: { rails: ['6.0'], ruby: ['2.6'], database: ['sqlite'], paperclip: [true] } }
-      - test_solidus:
-          name: *name
-          matrix: { parameters: { rails: ['5.2'], ruby: ['2.5'], database: ['sqlite'], paperclip: [true] } }
+      # # Based on supported versions for the current Solidus release and recommended versions from
+      # # https://www.fastruby.io/blog/ruby/rails/versions/compatibility-table.html.
+      # - test_solidus:
+      #     name: &name "test-rails-<<matrix.rails>>-ruby-<<matrix.ruby>>-<<matrix.database>>-<<#matrix.paperclip>>paperclip<</matrix.paperclip>><<^matrix.paperclip>>activestorage<</matrix.paperclip>>"
+      #     matrix: { parameters: { rails: ['7.0'], ruby: ['3.0', '3.1'], database: ['mysql', 'sqlite', 'postgres'], paperclip: [true, false] } }
+      # - test_solidus:
+      #     name: *name
+      #     matrix: { parameters: { rails: ['6.1'], ruby: ['2.7', '3.0'], database: ['sqlite'], paperclip: [false] } }
+      # - test_solidus:
+      #     name: *name
+      #     matrix: { parameters: { rails: ['6.0'], ruby: ['2.6'], database: ['sqlite'], paperclip: [true] } }
+      # - test_solidus:
+      #     name: *name
+      #     matrix: { parameters: { rails: ['5.2'], ruby: ['2.5'], database: ['sqlite'], paperclip: [true] } }
