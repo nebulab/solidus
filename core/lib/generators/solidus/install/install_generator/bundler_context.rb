@@ -49,7 +49,11 @@ module Solidus
       end
 
       def initialize
-        @dependencies = Bundler.locked_gems.dependencies
+        # We want to get the locked gems from `#definition` instead of
+        # `Bundler.locked_gems` so that the locked gems won't be memoized. See
+        # https://rubydoc.info/gems/bundler/2.3.22/Bundler.locked_gems.
+        @dependencies = Bundler.definition.locked_gems.dependencies
+
         @injector = InjectorWithPathSupport
       end
 
