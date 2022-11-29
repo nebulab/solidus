@@ -54,7 +54,7 @@ module Solidus
 
       def install_solidus_starter_frontend
         remove_solidus_frontend
-        @generator_context.apply "https://raw.githubusercontent.com/solidusio/solidus_starter_frontend/v3.2/template.rb"
+        @generator_context.apply "https://raw.githubusercontent.com/solidusio/solidus_starter_frontend/gsmendoza/sol-547-fix-ensure-that-ssf-32-doesnt-add/template.rb"
       end
 
       def install_custom_frontend
