@@ -29,3 +29,8 @@
 //= require 'spree/backend/views/tables/selectable_table'
 //= require 'spree/backend/views/tables/selectable_table/summary'
 //= require 'spree/backend/views/tables/selectable_table/sum_return_item_amount'
+//= require 'spree/backend/views/tables/selectable_table/actions'
+//= require 'spree/backend/views/modals'
+//= require 'spree/backend/views/modals/batch'
+//= require 'spree/backend/views/modals/batch/preview'
+//= require 'spree/backend/views/modals/batch/result'

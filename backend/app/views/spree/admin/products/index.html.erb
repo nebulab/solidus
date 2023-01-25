@@ -59,16 +59,29 @@
 <%= paginate @collection, theme: "solidus_admin" %>
 
 <% if @collection.any? %>
-  <table class="index" id="listing_products">
+  <%=
+    content_tag(
+      :table,
+      class: "index selectable-table actionable",
+      id: 'listing_products',
+      data: {
+        actions: batch_action_buttons(batch_actions),
+        search_form_selector: 'form.spree\\/product_search',
+        preview_batch_url: preview_batch_admin_products_path,
+        process_batch_url: process_batch_admin_products_path
+      }
+    ) do %>
     <colgroup>
-       <col style="width: 15%;">
-       <col style="width: 5%;">
-       <col style="width: 50%;">
-       <col style="width: 15%;">
-       <col style="width: 15%;">
+      <col>
+      <col style="width: 15%;">
+      <col style="width: 5%;">
+      <col style="width: 50%;">
+      <col style="width: 15%;">
+      <col style="width: 15%;">
     </colgroup>
     <thead>
       <tr data-hook="admin_products_index_headers">
+        <th></th>
         <th><%= Spree::Variant.human_attribute_name(:sku) %></th>
         <th></th>
         <th><%= sort_link @search,:name, Spree::Product.human_attribute_name(:name), { default_order: "desc" }, {title: 'admin_products_listing_name_title'} %></th>
@@ -79,6 +92,7 @@
     <tbody>
       <% @collection.each do |product| %>
           <tr <%== "style='color: red;'" if product.deleted? %> id="<%= spree_dom_id product %>" data-hook="admin_products_index_rows">
+            <td><%= check_box_tag 'q[id_in][]', product.id, false, class: 'selectable' %></td>
             <td><%= product.sku %></td>
             <td class="align-center">
               <%= render 'spree/admin/shared/image', image: product.gallery.images.first, size: :mini %>
@@ -95,7 +109,7 @@
           </tr>
       <% end %>
     </tbody>
-  </table>
+  <% end %>
 <% else %>
   <div class="no-objects-found">
     <%= render 'spree/admin/shared/no_objects_found',

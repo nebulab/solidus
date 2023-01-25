@@ -14,4 +14,5 @@ require 'responders'
 
 require 'spree/backend/action_callbacks'
 require 'spree/backend/callbacks'
+require 'spree/backend/batch'
 require 'spree/backend/engine'

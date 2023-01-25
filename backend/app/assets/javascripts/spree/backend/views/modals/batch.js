@@ -1,0 +1,1 @@
+Spree.Views.Modals.Batch = {}

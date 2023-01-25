@@ -11,6 +11,7 @@ _.extend(window.Spree, {
     Product: {},
     Promotions: {},
     Stock: {},
-    Tables: {}
+    Tables: {},
+    Modals: {}
   }
 })

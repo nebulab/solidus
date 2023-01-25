@@ -1,6 +1,7 @@
 //= require spree/backend/templates/_image
 //= require spree/backend/templates/tables/selectable_label
 //= require spree/backend/templates/tables/return_item_sum_amount
+//= require spree/backend/templates/tables/actions
 //= require spree/backend/templates/orders/customer_details/autocomplete
 //= require spree/backend/templates/orders/details_adjustment_row
 //= require spree/backend/templates/orders/line_item
