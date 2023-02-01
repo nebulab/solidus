@@ -210,22 +210,30 @@ fieldset {
   }
 
   .filter-actions {
-    margin-bottom: -32px;
-    margin-top: 15px;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: calc(100% - #{$width-sidebar});
+    padding: 15px 0;
+    background-color: $body-bg;
+    border-top: 1px solid $color-border;
+    z-index: 2;
     text-align: center;
 
     form {
       display: inline-block;
     }
 
-    button, .button, input[type="submit"], input[type="button"] {
-      box-shadow: 0 0 0 15px $body-bg;
-    }
-
     // Always make sure the choices at the bottom of a fieldset are spaced out
     > * + * {
       margin-left: 2em;
     }
+  }
+}
+
+.admin-nav-hidden {
+  .filter-actions {
+    width: calc(100% - #{$width-sidebar-collapsed});
   }
 }
 
