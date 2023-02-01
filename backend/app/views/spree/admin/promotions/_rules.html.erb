@@ -9,7 +9,7 @@
           <%= label_tag :promotion_rule_type, t('spree.discount_rules') %>
           <%= select_tag('promotion_rule[type]', options_for_promotion_rule_types(@promotion), include_blank: t(:choose_promotion_rule, scope: 'spree'), class: 'custom-select fullwidth', required: true) %>
         </div>
-        <div class="filter-actions actions">
+        <div class="single-filter-action">
           <%= button_tag t('spree.actions.add'), class: 'btn btn-primary' %>
         </div>
       <% end %>
@@ -44,7 +44,7 @@
         </div>
 
         <% if can?(:update, @promotion) %>
-          <div class="promotion-update filter-actions actions">
+          <div class="promotion-update single-filter-action">
             <%= button_tag t('spree.actions.update'), class: 'btn btn-primary' %>
           </div>
         <% end %>
