@@ -42,6 +42,9 @@ module Spree
         # Ensure a negative amount which does not exceed the sum of the order's
         # item_total and ship_total
         def compute_amount(calculable)
+
+          binding.irb
+
           amount = calculator.compute(calculable)
           amount ||= BigDecimal(0)
           amount = amount.abs

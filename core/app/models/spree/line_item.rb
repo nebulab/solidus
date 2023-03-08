@@ -41,7 +41,7 @@ module Spree
     delegate :name, :description, :sku, :should_track_inventory?, to: :variant
     delegate :currency, to: :order, allow_nil: true
 
-    attr_accessor :target_shipment, :price_currency
+    attr_accessor :target_shipment, :price_currency, :running_total
 
     self.allowed_ransackable_associations = ['variant']
     self.allowed_ransackable_attributes = ['variant_id']

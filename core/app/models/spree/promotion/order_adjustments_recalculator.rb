@@ -15,28 +15,54 @@ module Spree
       end
 
       def call
-        all_items = line_items + shipments
-        all_items.each do |item|
-          promotion_adjustments = item.adjustments.select(&:promotion?)
 
-          promotion_adjustments.each { |adjustment| recalculate(adjustment) }
-          Spree::Config.promotion_chooser_class.new(promotion_adjustments).update
+        binding.irb
 
-          item.promo_total = promotion_adjustments.select(&:eligible?).sum(&:amount)
+
+        # Simplified version of the algorithm:
+        # There's no categories, priority or stacking yet.
+
+
+        all_items = line_items + shipments + [order]
+        possible_promotion_for_this_order_items = Hash.new { |h, k| h[k] = [] } # TODO: check other syntax
+        all_items.map(&:adjustments).flatten.select(&:promotion?).each do |adjustment|
+          possible_promotion_for_this_order_items[adjustment.source.promotion] << adjustment.adjustable
         end
-        # Update and select the best promotion adjustment for the order.
-        # We don't update the order.promo_total yet. Order totals are updated later
-        # in #update_adjustment_total since they include the totals from the order's
-        # line items and/or shipments.
-        order_promotion_adjustments = order.adjustments.select(&:promotion?)
-        order_promotion_adjustments.each { |adjustment| recalculate(adjustment) }
-        Spree::Config.promotion_chooser_class.new(order_promotion_adjustments).update
 
-        order.promo_total = all_items.sum(&:promo_total) +
-                            order_promotion_adjustments.
-                              select(&:eligible?).
-                              select(&:promotion?).
-                              sum(&:amount)
+        running_totals = Hash.new { |h, k| h[k] = [] } # TODO: check other syntax
+
+        possible_promotion_for_this_order_items.each do |promotion, items|
+          items.each do |item|
+            adjustment = item.adjustments.select(&:promotion?).find { |a| a.source.promotion == promotion }
+            item.running_total = adjustment.source.compute_amount(item)
+          end
+        end
+
+        #item.promo_total = promotion_adjustments.select(&:eligible?).sum(&:amount)
+
+
+        # all_items = line_items + shipments
+        # all_items.each do |item|
+        #   promotion_adjustments = item.adjustments.select(&:promotion?)
+
+        #   promotion_adjustments.each { |adjustment| recalculate(adjustment) }
+        #   Spree::Config.promotion_chooser_class.new(promotion_adjustments).update
+
+        #   item.promo_total = promotion_adjustments.select(&:eligible?).sum(&:amount)
+        # end
+        # # Update and select the best promotion adjustment for the order.
+        # # We don't update the order.promo_total yet. Order totals are updated later
+        # # in #update_adjustment_total since they include the totals from the order's
+        # # line items and/or shipments.
+        # order_promotion_adjustments = order.adjustments.select(&:promotion?)
+        # order_promotion_adjustments.each { |adjustment| recalculate(adjustment) }
+        # Spree::Config.promotion_chooser_class.new(order_promotion_adjustments).update
+
+        # order.promo_total = all_items.sum(&:promo_total) +
+        #                     order_promotion_adjustments.
+        #                       select(&:eligible?).
+        #                       select(&:promotion?).
+        #                       sum(&:amount)
         order
       end
 
