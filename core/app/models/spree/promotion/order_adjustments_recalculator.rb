@@ -16,30 +16,81 @@ module Spree
 
       def call
 
-        binding.irb
-
-
         # Simplified version of the algorithm:
         # There's no categories, priority or stacking yet.
-
-
+        
+        order.running_total = 0
+        
         all_items = line_items + shipments + [order]
-        possible_promotion_for_this_order_items = Hash.new { |h, k| h[k] = [] } # TODO: check other syntax
+        possible_promotions_for_order_and_items = Hash.new { |h, k| h[k] = [] } # TODO: check other syntax
         all_items.map(&:adjustments).flatten.select(&:promotion?).each do |adjustment|
-          possible_promotion_for_this_order_items[adjustment.source.promotion] << adjustment.adjustable
+          possible_promotions_for_order_and_items[adjustment.source.promotion] << adjustment.adjustable
         end
-
-        running_totals = Hash.new { |h, k| h[k] = [] } # TODO: check other syntax
-
-        possible_promotion_for_this_order_items.each do |promotion, items|
+        
+        possible_promotions_for_order_and_items.each do |promotion, items|
           items.each do |item|
+            if item.is_a? Spree::Order
+              item.running_total += item.line_items.map(&:running_total).sum
+              item.running_total += item.shipments.map(&:running_total).sum
+            else
+              item.running_total ||= 0
+            end
+            # TODO: only check the eligible adjustments?
             adjustment = item.adjustments.select(&:promotion?).find { |a| a.source.promotion == promotion }
-            item.running_total = adjustment.source.compute_amount(item)
+            item.running_total += adjustment.source.compute_amount(item)
           end
-        end
+        end        
+        
+        # possible_promotions_for_line_items = Hash.new { |h, k| h[k] = [] }
+        # line_items.map(&:adjustments).flatten.select(&:promotion?).each do |adjustment|
+        #   possible_promotions_for_line_items[adjustment.source.promotion] << adjustment.adjustable
+        # end
 
-        #item.promo_total = promotion_adjustments.select(&:eligible?).sum(&:amount)
+        # possible_promotions_for_shipments = Hash.new { |h, k| h[k] = [] }
+        # shipments.map(&:adjustments).flatten.select(&:promotion?).each do |adjustment|
+        #   possible_promotions_for_shipments[adjustment.source.promotion] << adjustment.adjustable
+        # end
 
+        # possible_promotions_for_order = Hash.new { |h, k| h[k] = [] }
+        # order.adjustments.select(&:promotion?).each do |adjustment|
+        #   possible_promotions_for_order[adjustment.source.promotion] << adjustment.adjustable
+        # end
+
+        # possible_promotions_for_line_items.each do |promotion, items|
+        #   items.each do |item|
+        #     item.running_total ||= 0
+        #     # TODO: only check the eligible adjustments?
+        #     adjustment = item.adjustments.select(&:promotion?).find { |a| a.source.promotion == promotion }
+        #     item.running_total += adjustment.source.compute_amount(item)
+        #   end
+        # end
+
+        # order.running_total += possible_promotions_for_line_items.values.flatten.sum(&:running_total)
+
+        # possible_promotions_for_shipments.each do |promotion, items|
+        #   items.each do |item|
+        #     item.running_total ||= 0
+        #     # TODO: only check the eligible adjustments?
+        #     adjustment = item.adjustments.select(&:promotion?).find { |a| a.source.promotion == promotion }
+        #     item.running_total += adjustment.source.compute_amount(item)
+        #   end
+        # end
+
+        # order.running_total += possible_promotions_for_shipments.values.flatten.sum(&:running_total)
+
+        # possible_promotions_for_order.each do |promotion, _items|
+        #   adjustment = order.adjustments.select(&:promotion?).find { |a| a.source.promotion == promotion }
+        #   order.running_total += adjustment.source.compute_amount(order)
+        # end
+
+
+        debugger
+        order.promo_total = order.running_total
+
+
+
+        
+        
 
         # all_items = line_items + shipments
         # all_items.each do |item|

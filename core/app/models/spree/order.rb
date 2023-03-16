@@ -146,6 +146,8 @@ module Spree
     validates :number, presence: true, uniqueness: { allow_blank: true, case_sensitive: true }
     validates :store_id, presence: true
 
+    attr_accessor :running_total
+
     def self.find_by_param(value)
       find_by number: value
     end

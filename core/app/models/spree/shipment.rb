@@ -46,6 +46,8 @@ module Spree
 
     delegate :tax_category, :tax_category_id, to: :selected_shipping_rate, allow_nil: true
 
+    attr_accessor :running_total
+
     def can_transition_from_pending_to_shipped?
       !requires_shipment?
     end

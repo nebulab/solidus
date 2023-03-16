@@ -162,9 +162,6 @@ module Spree
       order.included_tax_total = all_items.sum(&:included_tax_total) + order_tax_adjustments.select(&:included?).sum(&:amount)
       order.additional_tax_total = all_items.sum(&:additional_tax_total) + order_tax_adjustments.reject(&:included?).sum(&:amount)
 
-      # TODO: Delete this line in Solidus 4.0, when it is run in `update_promotions`.
-      order.promo_total = all_items.sum(&:promo_total) + adjustments.select(&:eligible?).select(&:promotion?).sum(&:amount)
-
       update_order_total
     end
 
