@@ -12,7 +12,7 @@ module Spree
           promotable.is_a?(Spree::Order)
         end
 
-        def eligible?(promotable, _options = {})
+        def eligible?(promotable, _options = nil)
           case preferred_match_policy
           when 'any'
             promotable.line_items.any? { |item| actionable?(item) }

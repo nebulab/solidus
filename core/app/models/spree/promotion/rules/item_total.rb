@@ -31,7 +31,7 @@ module Spree
           promotable.is_a?(Spree::Order)
         end
 
-        def eligible?(order, _options = {})
+        def eligible?(order, _options = nil)
           return false unless order.currency == preferred_currency
 
           unless total_for_order(order).send(operator, threshold)

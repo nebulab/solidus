@@ -21,7 +21,7 @@ module Spree
           promotable.is_a?(Spree::Order)
         end
 
-        def eligible?(order, _options = {})
+        def eligible?(order, _options = nil)
           order_taxons = taxons_in_order(order)
 
           case preferred_match_policy

@@ -13,7 +13,7 @@ module Spree
           promotable.is_a?(Spree::Order)
         end
 
-        def eligible?(order, _options = {})
+        def eligible?(order, _options = nil)
           return false unless order.user
           if all_match_policy?
             match_all_roles?(order)

@@ -17,7 +17,7 @@ module Spree
           promotable.is_a?(Spree::Order)
         end
 
-        def eligible?(order, _options = {})
+        def eligible?(order, _options = nil)
           stores.none? || stores.include?(order.store)
         end
       end

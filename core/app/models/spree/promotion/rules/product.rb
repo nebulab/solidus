@@ -31,7 +31,7 @@ module Spree
           promotable.is_a?(Spree::Order)
         end
 
-        def eligible?(order, _options = {})
+        def eligible?(order, _options = nil)
           return true if eligible_products.empty?
 
           case preferred_match_policy

@@ -8,7 +8,7 @@ module Spree
           promotable.is_a?(Spree::Order)
         end
 
-        def eligible?(order, _options = {})
+        def eligible?(order, _options = nil)
           unless order.user.present?
             eligibility_errors.add(:base, eligibility_error_message(:no_user_specified), error_code: :no_user_specified)
           end
