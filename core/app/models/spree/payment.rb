@@ -17,6 +17,8 @@ module Spree
     belongs_to :payment_method, -> { with_discarded }, class_name: 'Spree::PaymentMethod', inverse_of: :payments, optional: true
 
     has_many :log_entries, as: :source
+    # has_many :refund_log_entries, through: :refunds, source: :log_entries
+
     has_many :state_changes, as: :stateful
     has_many :capture_events, class_name: 'Spree::PaymentCaptureEvent'
     has_many :refunds, inverse_of: :payment
@@ -58,6 +60,25 @@ module Spree
     scope :not_store_credits, -> { where(arel_table[:source_type].not_eq(Spree::StoreCredit.to_s).or(arel_table[:source_type].eq(nil))) }
 
     include ::Spree::Config.state_machines.payment
+
+    # Incorrect: Imagine if you have a refund and a payment with the same id;
+    # it will pick both even if they probably do not belong to the same payment.
+    # def all_log_entries
+    #   LogEntry.where(
+    #     source_id: [id] + refunds.pluck(:id),
+    #     source_type: [self.class.to_s, 'Spree::Refund']
+    #   ).order(created_at: :desc)
+    # end
+
+    def all_log_entries
+      LogEntry.where(
+              source_id: refunds.pluck(:id),
+              source_type: 'Spree::Refund'
+            ).or(
+              LogEntry.where(id: log_entries.pluck(:id))
+            ).order(:created_at)
+    end
+
 
     # @return [String] this payment's response code
     def transaction_id
