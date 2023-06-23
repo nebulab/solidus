@@ -290,7 +290,7 @@ RSpec.describe Spree::OrderContents, type: :model do
       it "removes item from order" do
         expect {
           subject.update_cart params
-        }.to change { subject.order.line_items.count }
+        }.to change { subject.order.line_items.reload.count }.from(1).to(0)
       end
     end
 
