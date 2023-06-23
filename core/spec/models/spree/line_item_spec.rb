@@ -102,7 +102,7 @@ RSpec.describe Spree::LineItem, type: :model do
     let(:store) { create(:store, default: true) }
     let(:order) { Spree::Order.new(currency: "RUB", store: store) }
     let(:variant) { Spree::Variant.new(product: Spree::Product.new) }
-    let(:line_item) { Spree::LineItem.new(order: order, variant: variant) }
+    let(:line_item) { Spree::LineItem.new(quantity: 1, order: order, variant: variant) }
 
     before { expect(variant).to receive(:price_for_options).at_least(:once).and_return(price) }
 

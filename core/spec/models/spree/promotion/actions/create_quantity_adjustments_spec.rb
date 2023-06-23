@@ -33,11 +33,6 @@ module Spree::Promotion::Actions
 
           before { action.preferred_group_size = 2 }
 
-          context "and an item with a quantity of 0" do
-            let(:quantity) { 0 }
-            it { is_expected.to eq 0 }
-          end
-
           context "and an item with a quantity of 1" do
             let(:quantity) { 1 }
             it { is_expected.to eq 0 }

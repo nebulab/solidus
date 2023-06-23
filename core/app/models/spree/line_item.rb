@@ -27,7 +27,7 @@ module Spree
     validates :variant, presence: true
     validates :quantity, numericality: {
       only_integer: true,
-      greater_than: -1
+      greater_than: 0
     }
     validates :price, numericality: true
     validate :price_match_order_currency
