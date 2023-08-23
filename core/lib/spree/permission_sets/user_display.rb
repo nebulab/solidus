@@ -10,7 +10,7 @@ module Spree
       def activate!
         can [:read, :admin, :edit, :addresses, :orders, :items], Spree.user_class
         can [:read, :admin], Spree::StoreCredit
-        can :read, Spree::Role
+        can [:read, :admin], Spree::Role
       end
     end
   end
