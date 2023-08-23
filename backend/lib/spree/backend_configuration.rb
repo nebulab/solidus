@@ -47,7 +47,7 @@ module Spree
                             :store_credit_reasons]
     PROMOTION_TABS     ||= [:promotions, :promotion_categories]
     STOCK_TABS         ||= [:stock_items]
-    USER_TABS          ||= [:users, :store_credits]
+    USER_TABS          ||= [:users, :roles, :store_credits]
 
     # Items can be added to the menu by using code like the following:
     #
@@ -107,6 +107,7 @@ module Spree
         MenuItem.new(
           USER_TABS,
           'user',
+          partial: 'spree/admin/shared/user_sub_menu',
           condition: -> { Spree.user_class && can?(:admin, Spree.user_class) },
           url: :admin_users_path,
           position: 4

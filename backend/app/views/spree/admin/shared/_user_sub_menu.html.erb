@@ -1,0 +1,9 @@
+<ul class="admin-subnav" data-hook="admin_user_sub_tabs">
+  <% if can?(:admin, Spree.user_class) %>
+    <%= tab :user, label: :users, url: spree.admin_users_path %>
+  <% end %>
+
+  <% if can?(:admin, Spree::Role) %>
+    <%= tab :roles, label: :roles, url: spree.admin_roles_path %>
+  <% end %>
+</ul>
