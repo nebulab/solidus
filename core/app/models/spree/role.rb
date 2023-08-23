@@ -24,5 +24,9 @@ module Spree
     def assign_permissions
       ::Spree::Config.roles.assign_permissions name, permission_sets_constantized
     end
+
+    def can_be_deleted?
+      permission_sets.find_by(set: ["Spree::PermissionSets::SuperUser", "Spree::PermissionSets::DefaultCustomer"]).nil?
+    end
   end
 end

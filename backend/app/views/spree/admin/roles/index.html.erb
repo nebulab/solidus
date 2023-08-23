@@ -1,0 +1,40 @@
+<% admin_breadcrumb(plural_resource_name(Spree::LegacyUser)) %>
+<% admin_breadcrumb(t('spree.roles')) %>
+
+<% content_for :page_actions do %>
+  <% if can?(:admin, Spree::Role) && can?(:create, Spree::Role) %>
+    <li>
+      <%= link_to t('spree.new_role'), new_admin_role_url, class: 'btn btn-primary' %>
+    </li>
+  <% end %>
+<% end %>
+
+<table class="index">
+  <colgroup>
+    <col style="width: 30%">
+    <col style="width: 70%">
+  </colgroup>
+  <thead>
+    <tr data-hook="role_header">
+      <th><%= Spree.user_class.human_attribute_name(:name) %></th>
+      <th><%= Spree.user_class.human_attribute_name(:permissions) %></th>
+      <th class="actions"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @roles.each do |role| %>
+      <tr id="<%= spree_dom_id role %>" data-hook="rate_row">
+        <td><%= role.try(:name) || t(:not_available) %></td>
+        <td><%= role.permission_sets.map(&:name).to_sentence %></td>
+        <td class="actions">
+          <% if can?(:edit, role) %>
+            <%= link_to_edit role, no_text: true %>
+          <% end %>
+          <% if can?(:destroy, role) && role.can_be_deleted? %>
+            <%= link_to_delete role, no_text: true, url: spree.admin_role_path(role) %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
