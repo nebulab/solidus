@@ -7,7 +7,7 @@ module Spree
     has_many :permission_sets, through: :role_permissions
     has_many :users, through: :role_users
 
-    scope :non_base_roles, -> { where.not(name: ['admin']) }
+    scope :non_base_roles, -> { where.not(name: ['admin', 'default']) }
 
     validates_uniqueness_of :name, case_sensitive: true
     validates :name, uniqueness: true
