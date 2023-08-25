@@ -13,6 +13,7 @@ module Spree
     scope :custom_permissions, -> {
       where.not(id: display_permissions)
       .where.not(id: management_permissions)
+      .where.not(set: ['Spree::PermissionSets::SuperUser', 'Spree::PermissionSets::DefaultCustomer'])
     }
   end
 end
