@@ -181,6 +181,8 @@ Spree::Core::Engine.routes.draw do
       end
     end
 
+    resources :roles
+
     resources :style_guide, only: [:index]
   end
 

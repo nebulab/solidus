@@ -7,7 +7,7 @@ module Spree
     has_many :permission_sets, through: :role_permissions
     has_many :users, through: :role_users
 
-    scope :non_base_roles, -> { where.not(name: ['admin']) }
+    scope :non_base_roles, -> { where.not(name: ['admin', 'default']) }
 
     validates_uniqueness_of :name, case_sensitive: true
     validates :name, uniqueness: true
@@ -23,6 +23,10 @@ module Spree
 
     def assign_permissions
       ::Spree::Config.roles.assign_permissions name, permission_sets_constantized
+    end
+
+    def can_be_deleted?
+      permission_sets.find_by(set: ["Spree::PermissionSets::SuperUser", "Spree::PermissionSets::DefaultCustomer"]).nil?
     end
   end
 end

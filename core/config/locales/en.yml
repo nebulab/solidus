@@ -961,6 +961,7 @@ en:
         promotions: Promotions
         properties: Property Types
         rma: RMA
+        roles: Roles
         settings: Settings
         shipping: Shipping
         stock: Stock
@@ -1450,6 +1451,7 @@ en:
     currency_settings: Currency Settings
     current: Current
     current_promotion_usage: 'Current Usage: %{count}'
+    custom_permissions: Custom Permissions
     customer: Customer
     customer_details: Customer Details
     customer_details_updated: Customer Details Updated
@@ -1491,6 +1493,7 @@ en:
     discount_rules: Discount Rules
     dismiss_banner: No. Thanks! I'm not interested, do not display this message again
     display: Display
+    display_permissions: Display Permissions
     download_promotion_codes_list: Download codes list
     edit: Edit
     edit_refund_reason: Edit Refund Reason
@@ -1763,6 +1766,7 @@ en:
     manage_promotion_categories: Manage Promotion Categories
     manage_stock: Store Stock
     manage_variants: Manage Variants
+    management_permissions: Management Permissions
     manual_intervention_required: Manual intervention required
     master_price: Master Price
     master_sku: Master SKU
@@ -1811,6 +1815,7 @@ en:
     new_refund_reason: New Refund Reason
     new_return_authorization: New RMA
     new_rma_reason: New RMA Reason
+    new_role: New Role
     new_shipment_at_location: New shipment at location
     new_shipping_category: New Shipping Category
     new_shipping_method: New Shipping Method
