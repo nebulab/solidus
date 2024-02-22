@@ -68,7 +68,7 @@
                     <span class="text-gray-500 body-small"><%= item.line_item.display_amount %></span>
                   </td>
                   <td class="px-6 py-4 text-right">
-                    <%= form_for(item.line_item, url: solidus_admin.order_line_item_path(@order, item.line_item), method: :delete) do |f| %>
+                    <%= form_for(item.line_item, url: solidus_admin.remove_order_shipment_path(@order, @shipment, variant_id: item.variant.id, quantity: item.quantity), method: :delete) do |f| %>
                       <%= render component('ui/button').new(
                         scheme: :ghost,
                         size: :s,

@@ -3,9 +3,10 @@
 class SolidusAdmin::ShipmentsController < SolidusAdmin::BaseController
   include Spree::Core::ControllerHelpers::StrongParameters
 
-  before_action :load_order, :load_shipment, only: [:edit, :update, :split_edit, :split_create, :merge_edit, :merge_create]
-  before_action :load_shipment, only: [:split_edit, :split_create]
+  before_action :load_order, :load_shipment, only: [:edit, :update, :remove, :split_edit, :split_create, :merge_edit, :merge_create]
+  before_action :load_shipment, only: [:split_edit, :split_create, :remove]
   before_action :load_split_variants, only: [:split_create]
+  before_action :load_variant, only: [:remove]
   #before_action :load_transfer_params, only: [:split_create]
 
   def edit
@@ -93,7 +94,26 @@ class SolidusAdmin::ShipmentsController < SolidusAdmin::BaseController
     end
   end
 
+  def remove
+    if @shipment.shipped? || @shipment.canceled?
+      flash.now[:error] = t('.failed', state: @shipment.state)
+
+      respond_to do |format|
+        format.html { render component('orders/show').new(order: @order), status: :unprocessable_entity }
+      end
+    else
+      quantity = params[:quantity].to_i
+      @shipment.order.contents.remove(@variant, quantity, { shipment: @shipment })
+
+      redirect_to order_path(@order), status: :see_other, notice: t('.success')
+    end
+  end
+
   private
+
+  def load_variant
+    @variant ||= Spree::Variant.unscoped.find(params.fetch(:variant_id))
+  end
 
   def load_order
     @order = Spree::Order.find_by!(number: params[:order_id])

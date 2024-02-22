@@ -40,6 +40,7 @@ SolidusAdmin::Engine.routes.draw do
     resource :bill_address, only: [:show, :edit, :update], controller: "addresses", type: "bill"
     resources :shipments do
       member do
+        delete :remove
         get :split_edit
         put :split_create
         get :merge_edit
