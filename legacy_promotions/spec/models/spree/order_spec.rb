@@ -19,6 +19,20 @@ RSpec.describe Spree::Order do
 
       order.apply_shipping_promotions
     end
+
+    context "after the order state machine is reloaded" do
+      let(:order) { create(:order_with_line_items, state: :delivery) }
+
+      before do
+        @old_checkout_flow = Spree::Order.checkout_flow
+        Spree::Order.checkout_flow(&@old_checkout_flow)
+      end
+
+      it "calls apply_shipping_promotions " do
+        expect(order).to receive(:apply_shipping_promotions)
+        order.next!
+      end
+    end
   end
 
   context "empty!" do
@@ -74,6 +88,36 @@ RSpec.describe Spree::Order do
 
     it "deletes join table entries when deleting an order" do
       expect { subject }.to change { Spree::OrderPromotion.count }.from(1).to(0)
+    end
+  end
+
+  describe "#can_add_coupon?" do
+    let(:order) { Spree::Order.new(state: state) }
+
+    subject { order.can_add_coupon? }
+
+    context "when the order is in the cart state" do
+      let(:state) { "cart" }
+
+      it { is_expected.to eq(true) }
+    end
+
+    context "when the order is completed" do
+      let(:state) { "complete" }
+
+      it { is_expected.to eq(false) }
+    end
+
+    context "when the order is returned" do
+      let(:state) { "returned" }
+
+      it { is_expected.to eq(false) }
+    end
+
+    context "when the order is awaiting returns" do
+      let(:state) { "returned" }
+
+      it { is_expected.to eq(false) }
     end
   end
 end

@@ -394,7 +394,7 @@ module Spree
     # @!attribute [rw] order_contents_class
     # @return [Class] a class with the same public interfaces as
     #   Spree::OrderContents.
-    class_name_attribute :order_contents_class, default: 'Spree::OrderContents'
+    class_name_attribute :order_contents_class, default: 'Spree::SimpleOrderContents'
 
     # Allows providing your own class for shipping an order.
     #
@@ -552,7 +552,7 @@ module Spree
     class_name_attribute :taxon_attachment_module, default: "Spree::Taxon::ActiveStorageAttachment"
 
     # Set of classes that can be promotion adjustment sources
-    add_class_set :adjustment_promotion_source_types, default: ["Spree::PromotionAction"]
+    add_class_set :adjustment_promotion_source_types, default: []
 
     # Configures the absolute path that contains the Solidus engine
     # migrations. This will be checked at app boot to confirm that all Solidus
@@ -590,11 +590,11 @@ module Spree
 
     # Allows providing your own promotion configuration instance
     # @!attribute [rw] promotions
-    # @return [Spree::Core::PromotionConfiguration] an object that conforms to the API of
-    #   the standard promotion configuration class Spree::Core::PromotionConfiguration.
+    # @return [Spree::Core::NullPromotionConfiguration] an object that conforms to the API of
+    #   the example promotion configuration class Spree::Core::NullPromotionConfiguration.
     attr_writer :promotions
     def promotions
-      @promotions ||= Spree::Core::PromotionConfiguration.new
+      @promotions ||= Spree::Core::NullPromotionConfiguration.new
     end
 
     class << self

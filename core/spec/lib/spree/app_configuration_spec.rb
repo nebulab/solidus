@@ -36,12 +36,16 @@ RSpec.describe Spree::AppConfiguration do
     expect(prefs.variant_search_class).to eq Spree::Core::Search::Variant
   end
 
+  it "uses simple order contents class by default" do
+    expect(prefs.order_contents_class).to eq Spree::SimpleOrderContents
+  end
+
   it "uses variant price selector class by default" do
     expect(prefs.variant_price_selector_class).to eq Spree::Variant::PriceSelector
   end
 
   it "uses core's promotion configuration class by default" do
-    expect(prefs.promotions).to be_a Spree::Core::PromotionConfiguration
+    expect(prefs.promotions).to be_a Spree::Core::NullPromotionConfiguration
   end
 
   context "deprecated preferences" do
@@ -52,23 +56,23 @@ RSpec.describe Spree::AppConfiguration do
     end
 
     it "uses order adjustments recalculator class by default" do
-      expect(prefs.promotion_adjuster_class).to eq Spree::Promotion::OrderAdjustmentsRecalculator
+      expect(prefs.promotion_adjuster_class).to eq Spree::NullPromotionAdjuster
     end
 
     it "uses promotion handler coupon class by default" do
-      expect(prefs.coupon_code_handler_class).to eq Spree::PromotionHandler::Coupon
+      expect(prefs.coupon_code_handler_class).to eq Spree::NullPromotionHandler
     end
 
     it "uses promotion handler shipping class by default" do
-      expect(prefs.shipping_promotion_handler_class).to eq Spree::PromotionHandler::Shipping
+      expect(prefs.shipping_promotion_handler_class).to eq Spree::NullPromotionHandler
     end
 
     it "uses promotion code batch mailer class by default" do
-      expect(prefs.promotion_code_batch_mailer_class).to eq Spree::PromotionCodeBatchMailer
+      expect(prefs.promotion_code_batch_mailer_class).to eq Spree::DeprecatedConfigurableClass
     end
 
     it "uses promotion chooser class by default" do
-      expect(prefs.promotion_chooser_class).to eq Spree::PromotionChooser
+      expect(prefs.promotion_chooser_class).to eq Spree::DeprecatedConfigurableClass
     end
   end
 
@@ -113,7 +117,7 @@ RSpec.describe Spree::AppConfiguration do
 
   describe '#promotions' do
     subject { prefs.promotions }
-    it { is_expected.to be_a Spree::Core::PromotionConfiguration }
+    it { is_expected.to be_a Spree::Core::NullPromotionConfiguration }
   end
 
   describe '@default_country_iso_code' do
@@ -210,7 +214,7 @@ RSpec.describe Spree::AppConfiguration do
   describe "#adjustment_promotion_source_types" do
     subject { described_class.new.adjustment_promotion_source_types }
 
-    it { is_expected.to contain_exactly(Spree::PromotionAction) }
+    it { is_expected.to be_empty }
   end
 
   it 'has a default admin VAT location with nil values by default' do

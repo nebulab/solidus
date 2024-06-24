@@ -21,12 +21,7 @@ DummyApp::Application.routes.draw do
   }
   mount Spree::Core::Engine, at: "/"
 end
-
-unless SolidusAdmin::Engine.root.join('app/assets/builds/solidus_admin/tailwind.css').exist?
-  Dir.chdir(SolidusAdmin::Engine.root) do
-    system 'bundle exec rake tailwindcss:build' or abort 'Failed to build Tailwind CSS'
-  end
-end
+require "solidus_admin/testing_support/admin_assets"
 
 require 'rails-controller-testing'
 require 'rspec/rails'
@@ -44,6 +39,7 @@ require 'spree/testing_support/url_helpers'
 require 'spree/testing_support/authorization_helpers'
 require 'spree/testing_support/controller_requests'
 require "solidus_admin/testing_support/feature_helpers"
+require 'solidus_legacy_promotions/testing_support/factory_bot'
 require 'cancan/matchers'
 require 'spree/testing_support/capybara_ext'
 
@@ -75,6 +71,11 @@ require 'axe-rspec'
 require 'axe-capybara'
 
 Capybara.javascript_driver = (ENV['CAPYBARA_DRIVER'] || :selenium_chrome_headless).to_sym
+Capybara.enable_aria_label = true
+
+# VIEW COMPONENTS
+Rails.application.config.view_component.test_controller = "SolidusAdmin::BaseController"
+require "view_component/test_helpers"
 
 RSpec.configure do |config|
   config.fixture_path = File.join(__dir__, "fixtures")
@@ -100,6 +101,8 @@ RSpec.configure do |config|
     example.run
     DummyApp.use_solidus_admin = false
   end
+
+  config.include ViewComponent::TestHelpers, type: :component
 
   config.include Spree::TestingSupport::JobHelpers
   config.include SolidusAdmin::TestingSupport::FeatureHelpers, type: :feature

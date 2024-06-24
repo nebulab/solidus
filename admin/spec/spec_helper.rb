@@ -29,11 +29,7 @@ DummyApp::Application.routes.draw do
   mount Spree::Core::Engine, at: '/'
 end
 
-unless SolidusAdmin::Engine.root.join('app/assets/builds/solidus_admin/tailwind.css').exist?
-  Dir.chdir(SolidusAdmin::Engine.root) do
-    system 'bundle exec rake tailwindcss:build' or abort 'Failed to build Tailwind CSS'
-  end
-end
+require "solidus_admin/testing_support/admin_assets"
 
 # RAILS
 require "rspec/rails"
@@ -65,6 +61,7 @@ Capybara.register_driver :selenium_chrome_headless_docker_friendly do |app|
 end
 Capybara.javascript_driver = (ENV['CAPYBARA_DRIVER'] || :selenium_chrome_headless).to_sym
 Capybara.default_max_wait_time = ENV['DEFAULT_MAX_WAIT_TIME'].to_f if ENV['DEFAULT_MAX_WAIT_TIME'].present?
+Capybara.enable_aria_label = true
 
 # DATABASE CLEANER
 require 'database_cleaner'
@@ -109,6 +106,9 @@ RSpec.configure do |config|
 
   config.before do
     Rails.cache.clear
+  end
+  config.define_derived_metadata(file_path: %r{spec/features}) do |metadata|
+    metadata[:solidus_admin] = true
   end
 
   config.include FactoryBot::Syntax::Methods
