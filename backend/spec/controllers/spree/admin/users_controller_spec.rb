@@ -515,7 +515,7 @@ describe Spree::Admin::UsersController, type: :controller do
       can :manage, Spree.user_class
     end
 
-    let(:order) { create(:order) }
+    let(:order) { create(:completed_order_with_totals) }
     before { user.orders << order }
 
     it "assigns a list of the users orders" do
