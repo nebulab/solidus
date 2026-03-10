@@ -65,8 +65,35 @@ module Spree
 
       def orders
         params[:q] ||= {}
-        @search = Spree::Order.reverse_chronological.ransack(params[:q].merge(user_id_eq: @user.id))
-        @orders = @search.result.page(params[:page]).per(Spree::Config[:admin_products_per_page])
+        params[:q][:completed_at_not_null] ||= '1' if Spree::Config[:show_only_complete_orders_by_default]
+
+        @only_completed_orders = params[:q][:completed_at_not_null] == '1'
+
+        params[:q][:s] ||= @only_completed_orders ? 'completed_at DESC' : 'created_at ASC'
+        params[:q][:completed_at_not_null] = '' unless @only_completed_orders
+
+        if params[:q][:created_at_gt].present?
+          params[:q][:created_at_gt] = begin
+                                         Time.zone.parse(params[:q][:created_at_gt]).beginning_of_day
+                                       rescue StandardError
+                                         ""
+                                       end
+        end
+
+        if params[:q][:created_at_lt].present?
+          params[:q][:created_at_lt] = begin
+                                         Time.zone.parse(params[:q][:created_at_lt]).end_of_day
+                                       rescue StandardError
+                                         ""
+                                       end
+        end
+
+        @search = Spree::Order.reverse_chronological
+          .ransack(params[:q].merge(user_id_eq: @user.id))
+
+        @orders = @search.result.includes([:user])
+          .page(params[:page])
+          .per(params[:per_page] || Spree::Config[:orders_per_page])
       end
 
       def items
