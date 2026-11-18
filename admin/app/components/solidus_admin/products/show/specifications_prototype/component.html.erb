@@ -1,0 +1,219 @@
+<%# PROTOTYPE: variant switcher + three variants. Delete this component when the decision is captured. %>
+
+<% if variant == "A" %>
+  <%# ---------- VARIANT A: nested form, saved with the page's Save ---------- %>
+  <%= render component("ui/panel").new(title: "Specifications", title_hint: "Prototype A: edits are saved together with the product form") do |panel| %>
+    <% panel.with_section do %>
+      <div class="flex flex-col gap-6" data-proto="groups">
+        <% groups.each_with_index do |group, gi| %>
+          <div class="flex flex-col gap-4 rounded-lg border border-gray-100 p-4" data-proto="group">
+            <div class="flex gap-2 items-end">
+              <div class="flex items-center h-9 self-end">
+                <%= render component("ui/icon").new(name: "draggable", class: "w-6 h-6 cursor-grab fill-gray-500") %>
+              </div>
+              <div class="grow">
+                <%= render component("ui/forms/select").new(label: "Option value", name: "prototype[group][#{gi}][option_value_id]", choices: option_value_choices, value: group[:option_value_id].to_s, size: :m) %>
+              </div>
+              <%= render component("ui/button").new(tag: :button, type: :button, icon: "delete-bin-7-line", scheme: :ghost, title: "Remove group", onclick: "this.closest('[data-proto=group]').remove()") %>
+            </div>
+
+            <div class="flex flex-col gap-2 pl-8" data-proto="rows">
+              <span class="text-gray-700 font-semibold text-sm">Specifications</span>
+              <% group[:rows].each do |row| %>
+                <div class="flex gap-2 items-center" data-proto="row">
+                  <%= render component("ui/icon").new(name: "draggable", class: "w-6 h-6 cursor-grab fill-gray-500 shrink-0") %>
+                  <%= render component("ui/forms/input").new(type: :text, value: row[:property], list: "proto-properties", placeholder: "Enter property name", class: "grow") %>
+                  <%= render component("ui/forms/input").new(type: :text, value: row[:value], placeholder: "Enter property value", class: "grow") %>
+                  <%= render component("ui/button").new(tag: :button, type: :button, icon: "delete-bin-7-line", scheme: :ghost, title: "Remove", onclick: "this.closest('[data-proto=row]').remove()") %>
+                </div>
+              <% end %>
+              <template data-proto="row-template">
+                <div class="flex gap-2 items-center" data-proto="row">
+                  <%= render component("ui/icon").new(name: "draggable", class: "w-6 h-6 cursor-grab fill-gray-500 shrink-0") %>
+                  <%= render component("ui/forms/input").new(type: :text, list: "proto-properties", placeholder: "Enter property name", class: "grow") %>
+                  <%= render component("ui/forms/input").new(type: :text, placeholder: "Enter property value", class: "grow") %>
+                  <%= render component("ui/button").new(tag: :button, type: :button, icon: "delete-bin-7-line", scheme: :ghost, title: "Remove", onclick: "this.closest('[data-proto=row]').remove()") %>
+                </div>
+              </template>
+              <div>
+                <%= render component("ui/button").new(tag: :button, type: :button, text: "Add specification", icon: "add-line", scheme: :ghost, size: :s, onclick: "const r=this.closest('[data-proto=rows]'); r.insertBefore(r.querySelector('template').content.cloneNode(true), this.parentElement)") %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <% panel.with_action(name: "Add specification group", scheme: :secondary, href: "#", onclick: "const g=document.querySelector('[data-proto=groups]'); g.appendChild(g.firstElementChild.cloneNode(true)); return false") %>
+  <% end %>
+  <datalist id="proto-properties"><% property_names.each do |n| %><option value="<%= n %>"><% end %></datalist>
+
+<% elsif dialog_variant? %>
+  <%# ---------- VARIANT B*: read-only rows + Edit dialog per group; B/B1/B2/B3 differ in how a group's scope is chosen ---------- %>
+  <%= render component("ui/panel").new(title: "Specifications", title_hint: "Prototype #{variant}: each group is edited in a dialog and saved on its own") do |panel| %>
+    <% panel.with_section do %>
+      <div class="flex flex-col gap-4">
+        <% groups.each_with_index do |group, gi| %>
+          <div class="flex gap-2 justify-between">
+            <div class="flex gap-2">
+              <div class="flex items-center">
+                <%= render component("ui/icon").new(name: "draggable", class: "w-6 h-6 cursor-grab fill-gray-500") %>
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="font-semibold text-sm">
+                  <%= group[:title].sub(" (All values)", "") %>
+                  <span class="font-normal text-gray-500 ml-1"><%= scope_label(group) %></span>
+                </span>
+                <div class="flex gap-2 flex-wrap">
+                  <% group[:rows].each do |row| %>
+                    <%= render component("ui/badge").new(name: "#{row[:property]}:#{row[:value]}") %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <%= render component("ui/button").new(tag: :button, type: :button, scheme: :secondary, text: "Edit", onclick: "document.getElementById('proto-dialog-#{gi}').showModal()") %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    <% panel.with_action(name: "Add specification group", scheme: :secondary, href: "#", onclick: "document.getElementById('proto-dialog-new').showModal(); return false") %>
+  <% end %>
+
+  <% (groups.each_with_index.to_a + [[{title: "New group", option_value_id: nil, rows: [{property: "", value: ""}]}, "new"]]).each do |group, gi| %>
+    <%= render component("ui/modal").new(title: gi == "new" ? "Add specifications" : "Edit specifications", open: false, id: "proto-dialog-#{gi}") do |modal| %>
+      <div class="flex flex-col gap-4" data-proto="variants">
+        <% if variant == "B" %>
+          <%= render component("ui/forms/select").new(label: "Option value", name: "prototype[option_value_id]", choices: option_value_choices, value: group[:option_value_id].to_s, size: :m, hint: "General applies to every variant; pick an option value to describe only the variants that have it.") %>
+
+        <% elsif variant == "B1" %>
+          <%# B1: multi-select chips + match mode %>
+          <%= render component("ui/forms/select").new(label: "Applies to variants with", name: "prototype[option_value_ids][]", choices: option_value_choices.drop(1), value: (group[:option_value_ids] || []).map(&:to_s), multiple: true, size: :m, placeholder: "Every variant (General)", hint: "Leave empty for General. Pick one or more option values to narrow it down.") %>
+          <%= render component("ui/forms/switch_field").new(label: "Require all selected option values", error: nil, hint: "On: only variants that have every value above. Off: any variant that has at least one of them.", name: "proto-match-#{gi}", checked: group[:apply_to_all]) %>
+          <div class="text-sm text-gray-500">Currently matches <strong><%= scope_label(group) %></strong></div>
+
+        <% elsif variant == "B2" %>
+          <%# B2: one select per option type, "Any" leaves it unconstrained %>
+          <div class="flex flex-col gap-2">
+            <span class="text-gray-700 font-semibold">Applies to variants with</span>
+            <div class="flex gap-4">
+              <% option_types.each do |option_type| %>
+                <% selected = option_type.option_values.find { |ov| (group[:option_value_ids] || []).include?(ov.id) } %>
+                <%= render component("ui/forms/select").new(label: option_type.presentation, name: "prototype[by_type][#{option_type.id}]", choices: [["Any #{option_type.presentation.downcase}", ""]] + option_type.option_values.map { |ov| [ov.presentation, ov.id] }, value: selected&.id.to_s, size: :m) %>
+              <% end %>
+            </div>
+            <div class="text-sm text-gray-500">"Any" on every option type means General. Currently matches <strong><%= scope_label(group) %></strong>.</div>
+          </div>
+
+        <% elsif variant == "B3" %>
+          <%# B3: pick variants directly %>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-700 font-semibold">Applies to</span>
+              <span class="text-sm text-gray-500"><%= scope_label(group) %></span>
+            </div>
+            <label class="flex items-center gap-2 text-sm font-semibold py-1 border-b border-gray-100">
+              <input type="checkbox" class="rounded" <%= "checked" if group[:option_value_id].nil? %> onclick="this.closest('[data-proto=variants]').querySelectorAll('input[data-variant]').forEach(c => c.checked = this.checked)"> All variants (General)
+            </label>
+            <div class="grid grid-cols-2 gap-x-6 max-h-56 overflow-y-auto" data-proto="variants-list">
+              <% variants.each do |v| %>
+                <% matched = group[:option_value_id].nil? || (group[:apply_to_all] ? (v.option_value_ids.sort == group[:option_value_ids].sort) : (v.option_value_ids & group[:option_value_ids]).any?) %>
+                <label class="flex items-center gap-2 text-sm py-1"><input type="checkbox" class="rounded" data-variant <%= "checked" if matched %>> <%= v.options_text %></label>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        <div class="flex flex-col gap-2" data-proto="rows">
+          <span class="text-gray-700 font-semibold text-sm">Specifications</span>
+          <% group[:rows].each do |row| %>
+            <div class="flex gap-2 items-center" data-proto="row">
+              <%= render component("ui/icon").new(name: "draggable", class: "w-6 h-6 cursor-grab fill-gray-500 shrink-0") %>
+              <%= render component("ui/forms/input").new(type: :text, value: row[:property], list: "proto-properties", placeholder: "Enter property name", class: "grow") %>
+              <%= render component("ui/forms/input").new(type: :text, value: row[:value], placeholder: "Enter property value", class: "grow") %>
+              <%= render component("ui/button").new(tag: :button, type: :button, icon: "delete-bin-7-line", scheme: :ghost, title: "Remove", onclick: "this.closest('[data-proto=row]').remove()") %>
+            </div>
+          <% end %>
+          <template data-proto="row-template">
+            <div class="flex gap-2 items-center" data-proto="row">
+              <%= render component("ui/icon").new(name: "draggable", class: "w-6 h-6 cursor-grab fill-gray-500 shrink-0") %>
+              <%= render component("ui/forms/input").new(type: :text, list: "proto-properties", placeholder: "Enter property name", class: "grow") %>
+              <%= render component("ui/forms/input").new(type: :text, placeholder: "Enter property value", class: "grow") %>
+              <%= render component("ui/button").new(tag: :button, type: :button, icon: "delete-bin-7-line", scheme: :ghost, title: "Remove", onclick: "this.closest('[data-proto=row]').remove()") %>
+            </div>
+          </template>
+          <div>
+            <%= render component("ui/button").new(tag: :button, type: :button, text: "Add specification", icon: "add-line", scheme: :ghost, size: :s, onclick: "const r=this.closest('[data-proto=rows]'); r.insertBefore(r.querySelector('template').content.cloneNode(true), this.parentElement)") %>
+          </div>
+        </div>
+      </div>
+      <% modal.with_actions do %>
+        <form method="dialog" class="contents">
+          <%= render component("ui/button").new(tag: :button, scheme: :secondary, text: "Cancel") %>
+          <%= render component("ui/button").new(tag: :button, text: "Save") %>
+        </form>
+      <% end %>
+    <% end %>
+  <% end %>
+  <datalist id="proto-properties"><% property_names.each do |n| %><option value="<%= n %>"><% end %></datalist>
+
+<% else %>
+  <%# ---------- VARIANT C: inline rows, each action immediate ---------- %>
+  <%= render component("ui/panel").new(title: "Specifications", title_hint: "Prototype C: every row saves on its own, no page Save involved") do |panel| %>
+    <% groups.each do |group| %>
+      <% panel.with_section(wide: true, high: true) do %>
+        <div class="flex items-center justify-between px-6 py-3 bg-gray-15">
+          <span class="font-semibold text-sm"><%= group[:title].sub(" (All values)", "") %></span>
+          <% unless group[:option_value_id].nil? %>
+            <%= render component("ui/button").new(tag: :button, type: :button, icon: "delete-bin-7-line", scheme: :ghost, size: :s, title: "Remove group", onclick: "this.closest('section').remove()") %>
+          <% end %>
+        </div>
+        <div class="flex flex-col divide-y divide-gray-100" data-proto="rows">
+          <% group[:rows].each do |row| %>
+            <div class="flex items-center gap-2 px-6 py-2 text-sm group" data-proto="row">
+              <%= render component("ui/icon").new(name: "draggable", class: "w-5 h-5 cursor-grab fill-gray-500 shrink-0") %>
+              <span class="w-1/3 font-semibold" data-proto="label"><%= row[:property] %></span>
+              <span class="grow" data-proto="value"><%= row[:value] %></span>
+              <div class="flex gap-1 invisible group-hover:visible">
+                <%= render component("ui/button").new(tag: :button, type: :button, icon: "pencil-line", scheme: :ghost, size: :s, title: "Edit", onclick: "const r=this.closest('[data-proto=row]'); const v=r.querySelector('[data-proto=value]'); const t=prompt('Value for ' + r.querySelector('[data-proto=label]').textContent, v.textContent); if (t !== null) v.textContent = t") %>
+                <%= render component("ui/button").new(tag: :button, type: :button, icon: "delete-bin-7-line", scheme: :ghost, size: :s, title: "Remove", onclick: "this.closest('[data-proto=row]').remove()") %>
+              </div>
+            </div>
+          <% end %>
+          <div class="flex items-center gap-2 px-6 py-2 hidden" data-proto="new-row">
+            <span class="w-5 shrink-0"></span>
+            <%= render component("ui/forms/input").new(type: :text, list: "proto-properties", placeholder: "Property", size: :s, class: "w-1/3") %>
+            <%= render component("ui/forms/input").new(type: :text, placeholder: "Value", size: :s, class: "grow") %>
+            <%= render component("ui/button").new(tag: :button, type: :button, text: "Add", size: :s, onclick: "const f=this.closest('[data-proto=new-row]'); const [p,v]=f.querySelectorAll('input'); const row=f.previousElementSibling.cloneNode(true); row.querySelector('[data-proto=label]').textContent=p.value; row.querySelector('[data-proto=value]').textContent=v.value; f.parentElement.insertBefore(row, f); p.value=''; v.value=''; f.classList.add('hidden')") %>
+            <%= render component("ui/button").new(tag: :button, type: :button, text: "Cancel", size: :s, scheme: :ghost, onclick: "this.closest('[data-proto=new-row]').classList.add('hidden')") %>
+          </div>
+          <div class="px-6 py-2">
+            <%= render component("ui/button").new(tag: :button, type: :button, text: "Add specification", icon: "add-line", scheme: :ghost, size: :s, onclick: "const f=this.closest('[data-proto=rows]').querySelector('[data-proto=new-row]'); f.classList.remove('hidden'); f.querySelector('input').focus()") %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+    <% panel.with_section do %>
+      <div class="flex gap-2 items-end">
+        <div class="w-1/2">
+          <%= render component("ui/forms/select").new(label: "Add specifications for", name: "prototype[new_group]", choices: option_value_choices.drop(1), include_blank: "Choose an option value", size: :m) %>
+        </div>
+        <%= render component("ui/button").new(tag: :button, type: :button, text: "Add group", scheme: :secondary, onclick: "alert('Prototype: would create an empty group for the chosen option value')") %>
+      </div>
+    <% end %>
+  <% end %>
+  <datalist id="proto-properties"><% property_names.each do |n| %><option value="<%= n %>"><% end %></datalist>
+<% end %>
+
+<%# ---------- floating switcher (prototype only) ---------- %>
+<div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-full bg-black text-white px-4 py-2 shadow-xl text-sm font-semibold" data-controller="" id="proto-switcher">
+  <a href="<%= variant_url(previous_variant) %>" class="px-2" aria-label="Previous variant">←</a>
+  <span>Prototype <%= variant %> · <%= variant_name %></span>
+  <a href="<%= variant_url(next_variant) %>" class="px-2" aria-label="Next variant">→</a>
+</div>
+<script>
+  document.addEventListener("keydown", (e) => {
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName) || e.target.isContentEditable) return
+    if (e.key === "ArrowLeft") document.querySelector("#proto-switcher a[aria-label='Previous variant']").click()
+    if (e.key === "ArrowRight") document.querySelector("#proto-switcher a[aria-label='Next variant']").click()
+  })
+</script>

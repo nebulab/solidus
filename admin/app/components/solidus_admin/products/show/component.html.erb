@@ -93,6 +93,10 @@
           ) %>
         <% end %>
 
+        <%# PROTOTYPE: ?variant=A|B|C swaps the Specifications panel (see specifications_prototype/) %>
+        <% if request.params[:variant].present? %>
+          <%= render component("products/show/specifications_prototype").new(product: @product, variant: request.params[:variant]) %>
+        <% else %>
         <%= render component("ui/panel").new(title: t(".specifications")) do |panel| %>
           <% if product_properties.any? || variant_property_rules.any? %>
             <% panel.with_section do %>
@@ -127,6 +131,7 @@
             scheme: :secondary,
             href: spree.admin_product_product_properties_path(@product)
           ) %>
+        <% end %>
         <% end %>
       <% end %>
 
